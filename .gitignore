@@ -1,0 +1,36 @@
+#Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.parquet
+*.npy
+
+# Virtual env
+venv/
+.env/
+.venv/
+
+# jupyter
+.ipynb_checkpoints/
+
+# Datasets
+dataset/
+data/
+*.txt
+*.csv
+*.json
+
+# Ajouter les fichiers datasets complémentaire
+
+# Logs 
+*.log
+
+# Docker
+*.pid
+*.tar
+
+# OS
+.DS_Store
+Thumbs.db
