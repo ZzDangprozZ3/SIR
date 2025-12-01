@@ -9,3 +9,9 @@ Ce dépôt contient :
 ## Membres du groupe
 
 ## Organisation
+
+
+
+## Fonctionnement
+
+AWSCTD fonctionne avec python 3.10.11

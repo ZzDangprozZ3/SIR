@@ -8,7 +8,7 @@ __pycache__/
 *.npy
 
 # Virtual environment
-venv/
+.venv/
 AWSCTD/CSV/
 AWSCTD/ACCLOSS/
 AWSCTD/CM/
