@@ -1,4 +1,4 @@
-#Python
+# Python
 __pycache__/
 *.pyc
 *.pyo
@@ -7,30 +7,20 @@ __pycache__/
 *.parquet
 *.npy
 
-# Virtual env
+# Virtual environment
 venv/
-.env/
-.venv/
+AWSCTD/CSV/
+AWSCTD/ACCLOSS/
+AWSCTD/CM/
+AWSCTD/env/
+AWSCTD/results.db
+*.h5
 
-# jupyter
-.ipynb_checkpoints/
 
-# Datasets
-dataset/
-data/
-*.txt
-*.csv
-*.json
-
-# Ajouter les fichiers datasets complémentaire
-
-# Logs 
-*.log
-
-# Docker
-*.pid
-*.tar
-
-# OS
+# OS files
 .DS_Store
 Thumbs.db
+
+# IDE 
+.vscode/
+.idea/
