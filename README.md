@@ -9,22 +9,3 @@ Ce dépôt contient :
 ## Membres du groupe
 
 ## Organisation
-
-je te dis ce que je vois :
-
-/awsctd
-contient
-
-/accloss
-/cm
-/csv
-/env
-awsctd.py
-awsctdclearsession.py
-awsctdcreatemodel.py
-awsctdmodel.py
-awsctdreaddata.py
-config.ini
-readme.md
-requireme,ts.txt
-results.db
