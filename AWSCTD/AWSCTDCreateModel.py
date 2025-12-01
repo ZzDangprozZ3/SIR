@@ -157,7 +157,7 @@ def CreateModelImpl(sModel, nWordCount, nClassCount, nParametersCount, bCategori
 		model = CreateNewGRU(nWordCount, nClassCount, nParametersCount, bCategorical)
 	elif sModel == "LSTM-FCN":
 		model = CreateNewLSTM(nWordCount, nClassCount, nParametersCount, bCategorical)
-	elif sModel == "C":
+	elif sModel == "CNN":
 		model = CreateCNN(nWordCount, nClassCount, nParametersCount, bCategorical)
 	elif sModel == "AWSCTD-CNN-S":
 		model = CreateCNNS(nWordCount, nClassCount, nParametersCount, bCategorical)
