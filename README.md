@@ -18,4 +18,5 @@ AWSCTD fonctionne avec python 3.10.11
 
 ## Execution
 
-docker run awsctd fichier.csv CNN
+exemple d'éxecution
+docker run awsctd CSV/CSV/MalwarePlusClean/010_2.csv CNN
