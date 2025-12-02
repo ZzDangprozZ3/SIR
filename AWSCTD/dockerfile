@@ -21,20 +21,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 # -----------------------------
-#  Copy framework files
+#  Installation des dépendances
 # -----------------------------
-COPY . /app
+COPY requirements.txt .
+
+RUN pip install --upgrade pip
+RUN pip install --no-cache-dir -r requirements.txt
 
 # -----------------------------
-#  Upgrade pip & install Python deps
+#  Copy framework files
 # -----------------------------
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+# 3. Maintenant on copie le reste du code.
+# Si tu modifies AWSCTD.py, seule cette étape est refaite (très rapide).
+COPY . .
 
 # -----------------------------
 #  Default entrypoint
-# (you will pass file + model as args)
-# Example:
-#   docker run awsctd csv/... CNN
 # -----------------------------
 ENTRYPOINT ["python", "AWSCTD.py"]

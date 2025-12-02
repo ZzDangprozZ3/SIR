@@ -10,6 +10,9 @@ Ce dépôt contient :
 
 ## Organisation
 
+avant d'implémenter un convertisseur entre netmob23 et AWSCD, il faut commprendre comment les donné vont être transformer
+Il faut, pour chaque framework avoir une validation.
+la solution peu aussi être "peer reviewed"
 
 
 ## Fonctionnement
