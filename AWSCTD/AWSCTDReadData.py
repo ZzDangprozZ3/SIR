@@ -3,6 +3,7 @@ from keras.utils import to_categorical
 import numpy as np
 import gc
 
+
 def ReadDataImpl(sDataFile, bCategorical):
 	#Used when all data is in numbers
 	#dbTrain = np.loadtxt(sDataFile, delimiter=",", dtype=np.int16)
@@ -43,7 +44,7 @@ def ReadDataImpl(sDataFile, bCategorical):
 	
 	# Used to convert data to cathegorical
 	if bCategorical :
-		Ytr = np_utils.to_categorical(Ytr, dtype=np.int16)#[0, 1]
+		Ytr = to_categorical(Ytr)#[0, 1]
 	
 	del dbTrain
 	del encoder

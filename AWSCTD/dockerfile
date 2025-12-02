@@ -1,0 +1,40 @@
+# -----------------------------
+#  Base image Python 3.10
+# -----------------------------
+FROM python:3.10-slim
+
+# -----------------------------
+#  System dependencies
+# -----------------------------
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    python3-dev \
+    libhdf5-dev \
+    libblas-dev \
+    liblapack-dev \
+    gfortran \
+    && rm -rf /var/lib/apt/lists/*
+
+# -----------------------------
+#  Application directory
+# -----------------------------
+WORKDIR /app
+
+# -----------------------------
+#  Copy framework files
+# -----------------------------
+COPY . /app
+
+# -----------------------------
+#  Upgrade pip & install Python deps
+# -----------------------------
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# -----------------------------
+#  Default entrypoint
+# (you will pass file + model as args)
+# Example:
+#   docker run awsctd csv/... CNN
+# -----------------------------
+ENTRYPOINT ["python", "AWSCTD.py"]

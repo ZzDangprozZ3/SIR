@@ -15,3 +15,7 @@ Ce dépôt contient :
 ## Fonctionnement
 
 AWSCTD fonctionne avec python 3.10.11
+
+## Execution
+
+docker run awsctd fichier.csv CNN
