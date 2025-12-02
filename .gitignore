@@ -24,3 +24,30 @@ Thumbs.db
 # IDE 
 .vscode/
 .idea/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.pkl
+*.parquet
+*.npy
+
+# Virtual environment
+.venv/
+AWSCTD/CSV/
+AWSCTD/ACCLOSS/
+AWSCTD/CM/
+AWSCTD/env/
+AWSCTD/results.db
+*.h5
+
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE 
+.vscode/
+.idea/
