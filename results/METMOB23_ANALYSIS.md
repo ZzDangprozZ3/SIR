@@ -1,7 +1,6 @@
 # 📊 Analyse du Dataset NetMob23
 
 **Date:** 8 Décembre 2024  
-**Framework assigné:** SGmVRNN
 
 ---
 
@@ -106,6 +105,7 @@ Le dataset NetMob23 contient des données de trafic réseau mobile pour 3 applic
 | **Consommation** | Moyenne-élevée | Élevée | Moyenne |
 
 ---
+**Framework assigné:** SGmVRNN (FADWA MERZAK)
 
 ## 🔄 Comparaison avec SGmVRNN Original
 
