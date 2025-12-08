@@ -2,7 +2,133 @@
 
 **Date:** 8 Décembre 2024  
 
----
+## 🎓 Comprendre NetMob23 - Explication Simple
+
+### C'est quoi NetMob23 ?
+
+NetMob23 est un **dataset de trafic réseau mobile réel** collecté par un opérateur télécom. Il mesure **combien de données** les utilisateurs consomment sur différentes applications mobiles (Facebook, Netflix, Spotify).
+
+### 🗺️ Le concept de "Zone géographique" (Tile)
+
+Imagine une ville divisée en **petits carrés** (comme une grille) :
+```
+┌──────────┬──────────┬──────────┐
+│  Zone 1  │  Zone 2  │  Zone 3  │  ← Chaque carré = 1 ZONE
+│ (Tile 1) │ (Tile 2) │ (Tile 3) │
+├──────────┼──────────┼──────────┤
+│  Zone 4  │  Zone 5  │  Zone 6  │
+│ (Tile 4) │ (Tile 5) │ (Tile 6) │
+└──────────┴──────────┴──────────┘
+```
+
+**1 Tile** = 1 zone géographique (par exemple : un quartier, une rue, un parc)
+
+### 📱 Les fichiers du dataset
+
+**Structure d'un nom de fichier :**
+```
+Facebook_DL_Tile_92483.txt
+    ↓         ↓       ↓
+  App      Type    Zone
+```
+
+- **Facebook** = Application mesurée
+- **DL** = DownLink (données descendantes = téléchargement)
+- **Tile_92483** = Zone géographique n°92483
+
+**Signification :** Ce fichier contient les données de téléchargement Facebook dans la zone 92483.
+
+### ⏰ Les mesures temporelles
+
+Dans chaque zone, on mesure le trafic **toutes les 15 minutes** :
+```
+📅 Un jour (24 heures)
+├─ 00h00-00h15 → Mesure 1  │
+├─ 00h15-00h30 → Mesure 2  │
+├─ 00h30-00h45 → Mesure 3  │
+├─ ...                      │  96 mesures
+├─ 23h15-23h30 → Mesure 95 │  par jour
+└─ 23h45-00h00 → Mesure 96 │
+
+Calcul : 24 heures × 4 mesures/heure = 96 mesures/jour
+```
+
+### 📊 Contenu d'un fichier
+
+**Voici ce qu'on trouve dans un fichier :**
+```
+20190430 1109 1389 1419 1532 1776 2085 ...
+
+↓         ↓    ↓    ↓    ↓    ↓    ↓
+Date    00h00 00h15 00h30 00h45 01h00 01h15 ...
+        -15   -30   -45   -00   -15   -30
+```
+
+**Chaque nombre** = Volume de trafic pendant un intervalle de 15 minutes
+
+### 🔍 LA DÉCOUVERTE IMPORTANTE
+
+**Au départ, on pensait :**
+- 1 fichier = 1 jour de données
+- Donc 96 valeurs par fichier
+
+**MAIS en explorant, j'ai découvert :**
+- 1 fichier = **77 jours consécutifs** de données !
+- Donc **7372 valeurs** par fichier (77 jours × 96 mesures/jour)
+
+### 📅 Visualisation d'un fichier complet
+```
+Facebook_DL_Tile_92483.txt (7372 valeurs)
+
+┌─────────────────────────────────────┐
+│ Jour 1 : 30 avril 2019              │
+│ → 96 valeurs (00h00 à 23h45)       │
+├─────────────────────────────────────┤
+│ Jour 2 : 1er mai 2019               │
+│ → 96 valeurs (00h00 à 23h45)       │
+├─────────────────────────────────────┤
+│ Jour 3 : 2 mai 2019                 │
+│ → 96 valeurs (00h00 à 23h45)       │
+├─────────────────────────────────────┤
+│          ...                         │
+│       (74 autres jours)             │
+├─────────────────────────────────────┤
+│ Jour 77 : ~15 juillet 2019          │
+│ → 96 valeurs (00h00 à 23h45)       │
+└─────────────────────────────────────┘
+
+Total : 77 jours × 96 mesures = 7372 valeurs
+Période : ~2,5 mois de données par zone
+```
+
+### 🎯 Pourquoi c'est important pour SGmVRNN ?
+
+**Le problème :**
+- SGmVRNN est conçu pour des séries de **longueur moyenne** (quelques centaines/milliers de timesteps)
+- Nos fichiers ont **7372 timesteps**, c'est très long
+- Temps d'entraînement = **très lent**
+
+**La solution :**
+```
+1 fichier long (7372 valeurs)
+         ↓
+    🔪 DÉCOUPAGE
+         ↓
+77 fichiers courts (96 valeurs chacun)
+```
+
+**Avantages :**
+1. ✅ Séries plus courtes = entraînement plus rapide
+2. ✅ Plus d'exemples : 50 fichiers → 3850 séries (50 × 77)
+3. ✅ Chaque jour = 1 exemple d'apprentissage
+
+### 📚 Résumé en 4 points
+
+1. **NetMob23** = Trafic mobile mesuré dans différentes zones géographiques
+2. **1 fichier** = 1 zone + 1 application + 77 jours de mesures
+3. **7372 valeurs** = 77 jours × 96 mesures (toutes les 15 min)
+4. **Notre stratégie** = Découper chaque fichier en 77 séries de 96 valeurs
+
 
 ## 🗂️ Structure du Dataset
 
