@@ -100,28 +100,6 @@ Total : 77 jours × 96 mesures = 7372 valeurs
 Période : ~2,5 mois de données par zone
 ```
 
-### 🎯 Pourquoi c'est important pour SGmVRNN ?
-
-**Le problème :**
-- SGmVRNN est conçu pour des séries de **longueur moyenne** (quelques centaines/milliers de timesteps)
-- Nos fichiers ont **7372 timesteps**, c'est très long
-- Temps d'entraînement = **très lent**
-
-**La solution :**
-```
-1 fichier long (7372 valeurs)
-         ↓
-    🔪 DÉCOUPAGE
-         ↓
-77 fichiers courts (96 valeurs chacun)
-```
-
-**Avantages :**
-1. ✅ Séries plus courtes = entraînement plus rapide
-2. ✅ Plus d'exemples : 50 fichiers → 3850 séries (50 × 77)
-3. ✅ Chaque jour = 1 exemple d'apprentissage
-
-### 📚 Résumé en 4 points
 
 1. **NetMob23** = Trafic mobile mesuré dans différentes zones géographiques
 2. **1 fichier** = 1 zone + 1 application + 77 jours de mesures
