@@ -10,6 +10,7 @@ NetMob23 est un **dataset de trafic réseau mobile réel** collecté par un opé
 
 ### 🗺️ Le concept de "Zone géographique" (Tile)
 
+```
 ┌──────────┬──────────┬──────────┐
 │  Zone 1  │  Zone 2  │  Zone 3  │  ← Chaque carré = 1 ZONE
 │ (Tile 1) │ (Tile 2) │ (Tile 3) │
