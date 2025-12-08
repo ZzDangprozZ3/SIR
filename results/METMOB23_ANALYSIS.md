@@ -2,7 +2,7 @@
 
 **Date:** 8 Décembre 2024  
 
-## 🎓 Comprendre NetMob23 - Explication Simple
+## 🎓 Comprendre NetMob23 
 
 ### C'est quoi NetMob23 ?
 
