@@ -201,47 +201,6 @@ Le dataset NetMob23 contient des données de trafic réseau mobile pour 3 applic
 
 ---
 
-## 📋 Plan d'Action - Phase 2 (Semaine prochaine)
-
-### Étape 2.1 : Script de conversion ✅
-```bash
-python scripts/convert_netmob_to_sgmvrnn.py
-```
-**Objectif :**
-- Lire 50 fichiers Facebook aléatoires
-- Convertir au format SGmVRNN (timestamp + features)
-- Option de découpage par jour (77 jours → 77 séries)
-- Sauvegarder dans `data_converted/`
-
-### Étape 2.2 : Vérification ✅
-```bash
-python scripts/verify_conversion.py
-```
-**Vérifier :**
-- Shape correct : (n_timesteps, n_features)
-- Pas de valeurs manquantes (NaN)
-- Timestamps chronologiques
-
-### Étape 2.3 : Adapter SGmVRNN ✅
-- Cloner le repo SGmVRNN original
-- Créer `train_netmob.py`
-- Ajuster hyperparamètres :
-  - `epochs = 10` (au lieu de 100)
-  - `batch_size = 64` (au lieu de 16)
-  - `learning_rate = 0.001`
-
----
-
-## 📊 Fichiers Générés
-
-- ✅ `results/exploration_results.json` - Statistiques détaillées (JSON)
-- ✅ `results/example_plot.png` - Visualisation d'un fichier exemple
-- ✅ `scripts/explore_netmob.py` - Script d'exploration automatique
-- ✅ `scripts/visualize_netmob.py` - Script de visualisation
-- 🔜 `scripts/convert_netmob_to_sgmvrnn.py` - Conversion de format
-- 🔜 `data_converted/` - Données converties au format SGmVRNN
-
----
 
 ## 💡 Observations et Remarques
 
@@ -264,13 +223,6 @@ python scripts/verify_conversion.py
 
 ---
 
-## 🔗 Ressources
-
-- **Dataset source:** [NetMob 2023 Challenge](https://netmob2023challenge.networks.imdea.org)
-- **Framework SGmVRNN:** [Lien GitHub à ajouter]
-- **Projet GitHub:** [https://github.com/ZzDangprozZ3/SIR](https://github.com/ZzDangprozZ3/SIR)
-
----
 
 **Dernière mise à jour:** 8 Décembre 2024  
 **Statut:** Phase 1 terminée ✅ | Phase 2 en cours 🔄
