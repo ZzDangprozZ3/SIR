@@ -9,13 +9,18 @@ __pycache__/
 
 # Virtual environment
 .venv/
+
+# AWSCTD
 AWSCTD/CSV/
 AWSCTD/ACCLOSS/
 AWSCTD/CM/
 AWSCTD/env/
 AWSCTD/results.db
 *.h5
+CausalRCA/
 
+
+# CausalRCA
 
 # OS files
 .DS_Store
@@ -24,3 +29,8 @@ Thumbs.db
 # IDE 
 .vscode/
 .idea/
+
+
+# data
+/Facebook/
+/Netflix/
