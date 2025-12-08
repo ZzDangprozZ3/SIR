@@ -1,7 +1,6 @@
 # 📊 Analyse du Dataset NetMob23
 
 **Date:** 8 Décembre 2024  
-**Auteur:** Fadwa  
 **Framework assigné:** SGmVRNN
 
 ---
