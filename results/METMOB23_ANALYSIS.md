@@ -122,38 +122,6 @@ Le dataset NetMob23 contient des données de trafic réseau mobile pour 3 applic
 
 ---
 
-## 📝 Format des Fichiers
-
-### Structure d'un fichier `.txt`
-
-**Exemple : `Facebook_DL_Tile_92483.txt`**
-```
-20190430 1109 1389 1419 1532 1776 2085 ...    ← Ligne 1 : Date + données
-895 1555 1828 1444 1402 606 570 921 ...       ← Lignes suivantes
-...
-(7372 valeurs au total)
-```
-
-### Détails importants
-
-- **1ère ligne:** Date de début au format `YYYYMMDD` suivie des premières valeurs
-- **Total par fichier:** **7372 valeurs numériques** = **~77 jours consécutifs**
-  - Chaque jour = 96 mesures (une toutes les 15 minutes)
-  - Calcul: 7372 ÷ 96 ≈ 76.8 jours ≈ **2,5 mois de données**
-- **Période couverte:** Du 30 avril 2019 au 31 mai 2019 (environ)
-- **Granularité temporelle:** 15 minutes
-  - Valeur 0 = 00h00-00h15
-  - Valeur 95 = 23h45-00h00
-  - Puis recommence pour le jour suivant
-
-### Signification des valeurs
-
-- **Type:** Volume de trafic réseau mobile (en octets ou paquets)
-- **Représentation:** Chaque valeur = volume de données transférées pendant un intervalle de 15 minutes
-- **Format:** Valeurs entières positives
-- **Tile:** Chaque fichier correspond à une zone géographique unique (identifiée par le numéro de Tile)
-
----
 
 ## 📈 Statistiques Descriptives
 
