@@ -1,7 +1,6 @@
 # 🔄  Conversion NetMob23 → SGmVRNN
 
-**Auteur :** Fadwa  
-**Date :** Décembre 2024  
+
 
 
 ### Principe
