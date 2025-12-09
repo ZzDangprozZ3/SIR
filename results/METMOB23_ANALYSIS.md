@@ -287,7 +287,7 @@ Le dataset NetMob23 contient des données de trafic réseau mobile pour 3 applic
 - Beaucoup de petites valeurs (0-100) dans Spotify
 - Le "Max global" de 20190531 semble être une date mal parsée
 
-### Questions en suspens ❓
+### Questions ❓
 - Unité exacte des valeurs de trafic ? (octets, paquets, requêtes ?)
 - Pourquoi certaines valeurs sont-elles égales à la date (20190531) ?
 - Y a-t-il des labels d'anomalies dans le dataset ?
