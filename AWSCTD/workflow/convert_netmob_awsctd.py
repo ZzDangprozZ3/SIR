@@ -4,25 +4,27 @@ import glob
 import os
 import sys
 
-# --- CONFIGURATION ---
+# CONFIGURATION
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 INPUT_PATH = os.path.abspath(os.path.join(BASE_DIR, '../../netmob23/'))
 OUTPUT_FILE = os.path.join(BASE_DIR, 'netmob_for_awsctd.csv')
-
-# --- OPTION DE TEST RAPIDE ---
-# Mettre un nombre pour tester vite, ou None pour tout traiter
+ANOMALY_FILE = os.path.join(BASE_DIR, '../anomalies.txt')
 MAX_FILES = 500
 
 # Paramètres AWSCTD
 VOCAB_SIZE = 100    
-FIXED_LENGTH = 100 
+FIXED_LENGTH = 96
 
-# --- DICTIONNAIRE DES ANOMALIES (Labels = 1) ---
-ANOMALY_DATES = {
-    "20190422": 1, "20190501": 1, "20190508": 1, "20190530": 1, # Fériés
-    "20190414": 1, "20190421": 1, "20190428": 1, # Dimanches vacances
-    "20190512": 1, # Match
-}
+
+# DICTIONNAIRE DES ANOMALIES (Labels = 1)
+def load_anomalies(file_path):
+    if not os.path.exists(file_path):
+        print(f"Fichier d'anomalies {file_path} introuvable. Aucune anomalie marquée.")
+        return {}
+    
+    with open(file_path, 'r') as f:
+        # Crée un dictionnaire { "20190422": 1, ... }
+        return {line.strip(): 1 for line in f if line.strip()}
 
 def load_data(path):
     print(f"Recherche dans : {path}")
@@ -35,7 +37,7 @@ def load_data(path):
         print("Erreur : Aucun fichier .txt trouvé.")
         sys.exit()
 
-    # --- GESTION DE LA LIMITE ---
+    # GESTION DE LA LIMITE
     if MAX_FILES is not None:
         print(f" MODE TEST : Traitement limité aux {MAX_FILES} premiers fichiers.")
         files = files[:MAX_FILES]
@@ -98,7 +100,7 @@ def process_sequences(sequences, vocab_size, fixed_len):
     
     return df_discrete.fillna(0).astype(int)
 
-def add_labels_and_save(df, dates_list):
+def add_labels_and_save(df, dates_list,ANOMALY_DATES):
     print(" Ajout des Labels...")
     labels = [ANOMALY_DATES.get(d, 0) for d in dates_list]
     df['Label'] = labels
@@ -113,5 +115,6 @@ def add_labels_and_save(df, dates_list):
 
 if __name__ == "__main__":
     seqs, dates = load_data(INPUT_PATH)
+    ANOMALY_DATES = load_anomalies(ANOMALY_FILE)
     df_clean = process_sequences(seqs, VOCAB_SIZE, FIXED_LENGTH)
-    add_labels_and_save(df_clean, dates)
+    add_labels_and_save(df_clean, dates,ANOMALY_DATES)
