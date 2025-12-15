@@ -221,6 +221,15 @@ for train, test in kfold.split(Xtr, Ytr):
 			y_pred = y_pred.astype(int)
 			cm += confusion_matrix(Ytr[test], y_pred)	
 
+
+		print("\n[INFO] Sauvegarde intermédiaire du modèle...")
+		model_filename = "trained_model.keras"
+		model_save_path = os.path.join(m_sWorkingDir, model_filename)
+		model.save(model_save_path)
+		print(f"Modèle sauvegardé : {model_save_path}")
+
+
+
 	#arrMae.append(scores[2])
 	try:
 		del model # this is from global space
@@ -247,9 +256,9 @@ print("Predicting time One : %.7f" % dTimePredForOneSample)
 
 print(" Acc: %.2f%% (+/- %.2f)" % (np.mean(arrAcc), np.std(arrAcc)))
 
-model = AWSCTDCreateModel.CreateModelImpl(m_sModel, m_nWordCount, m_nClassCount, m_nParametersCount, bCategorical)
+temp_model = AWSCTDCreateModel.CreateModelImpl(m_sModel, m_nWordCount, m_nClassCount, m_nParametersCount, bCategorical)
 
-sModel = str(model.to_json())
+sModel = str(temp_model.to_json())
 dAcc = np.mean(arrAcc)
 dAccStd = np.std(arrAcc)
 dLoss = np.mean(arrLoss)
@@ -318,3 +327,27 @@ if bCategorical:
 		sERR += "[" + arrClassNames[x] + " " + str(mean_eer) + "]"
 		
 	print(sERR)
+	
+
+
+
+
+
+try:
+	import AWSCTD_Detect 
+	
+	AWSCTD_Detect.MODEL_FILE = model_save_path
+	AWSCTD_Detect.DATA_FILE = m_sDataFile
+
+	base_data_path = os.path.dirname(m_sDataFile)
+	AWSCTD_Detect.META_FILE = os.path.join(base_data_path, 'netmob_metadata.csv')
+	
+	AWSCTD_Detect.generate_report()
+		
+except ImportError:
+	print("ERREUR: Le fichier 'AWSCTD_Detect.py' est introuvable.")
+except Exception as e:
+	print(f"ERREUR: Echec lors de la détection automatique : {e}")
+
+print("\n FIN DU PROCESSUS")
+

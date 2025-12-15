@@ -1,6 +1,7 @@
+.git
 .venv
 __pycache__
-.git
-.vscode
-data
-output
+*.pyc
+result.db
+trained_model.keras
+ROC/

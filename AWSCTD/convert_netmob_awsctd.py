@@ -6,7 +6,7 @@ import sys
 
 # CONFIGURATION
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-INPUT_PATH = os.path.abspath(os.path.join(BASE_DIR, '../../netmob23/'))
+INPUT_PATH = '/data'
 OUTPUT_FILE = os.path.join(BASE_DIR, 'netmob_for_awsctd.csv')
 OUTPUT_META_FILE = os.path.join(BASE_DIR, 'netmob_metadata.csv')
 ANOMALY_FILE = os.path.join(BASE_DIR, '../anomalies.txt')
@@ -14,20 +14,35 @@ ANOMALY_FILE = os.path.join(BASE_DIR, '../anomalies.txt')
 # Paramètres AWSCTD
 MAX_FILES = 500
 VOCAB_SIZE = 100    
-FIXED_LENGTH = 96
+#FIXED_LENGTH = 96
 
+def detect_sequence_length(files):
+    """Scanne le premier fichier valide pour déterminer la longueur standard"""
+    for file in files:
+        try:
+            with open(file, 'r') as f:
+                line = f.readline()
+                parts = line.strip().split()
+                if len(parts) > 2:
+                    detected_len = len(parts) - 1
+                    print(f"📏 Auto-detection de la longueur : {detected_len} mesures")
+                    return detected_len
+        except:
+            continue
+    return 96 # Valeur par défaut si échec
 
 # DICTIONNAIRE DES ANOMALIES (Labels = 1)
 def load_anomalies(file_path):
+    """Charge les dates d'anomalies depuis un fichier texte."""
     if not os.path.exists(file_path):
         print(f"Fichier d'anomalies {file_path} introuvable. Aucune anomalie marquée.")
         return {}
     
     with open(file_path, 'r') as f:
-        # Crée un dictionnaire { "20190422": 1, ... }
         return {line.strip(): 1 for line in f if line.strip()}
 
 def load_data(path):
+    """Charge les données depuis les fichiers texte dans le répertoire spécifié."""
     print(f"Recherche dans : {path}")
     if not os.path.exists(path):
         print(f"ERREUR : Dossier introuvable.")
@@ -76,6 +91,7 @@ def load_data(path):
     return sequences, metadata
 
 def process_sequences(sequences, vocab_size, fixed_len):
+    """Nettoie, normalise et discrétise les séquences."""
     print(" Discrétisation (0-99)...")
     if not sequences:
         print("Erreur: Aucune séquence à traiter.")
@@ -104,6 +120,7 @@ def process_sequences(sequences, vocab_size, fixed_len):
     return df_discrete.fillna(0).astype(int)
 
 def add_labels_and_save(df,dates_list, metadata,ANOMALY_DATES):
+    """Ajoute les labels et sauvegarde les données."""
     print(" Ajout des Labels...")
     labels = [ANOMALY_DATES.get(d, 0) for d in dates_list]
     df['Label'] = labels
@@ -124,8 +141,10 @@ def add_labels_and_save(df,dates_list, metadata,ANOMALY_DATES):
 
 if __name__ == "__main__":
     ANOMALY_DATES = load_anomalies(ANOMALY_FILE)
+    files = glob.glob(os.path.join(INPUT_PATH, '**/*.txt'), recursive=True)
+    DYNAMIC_LENGTH = detect_sequence_length(files)
+
     seqs, metadata = load_data(INPUT_PATH)
-    
-    df_clean = process_sequences(seqs, VOCAB_SIZE, FIXED_LENGTH)
+    df_clean = process_sequences(seqs, VOCAB_SIZE, DYNAMIC_LENGTH)
     dates_list = [m['Date'] for m in metadata]
     add_labels_and_save(df_clean,dates_list, metadata,ANOMALY_DATES)
