@@ -41,3 +41,7 @@ Thumbs.db
 /AWSCTD/workflow/netmob_for_awsctd.csv
 /AWSCTD/workflow/heatmaps_csv.png
 /AWSCTD/workflow/debug_heatmap.png
+/AWSCTD/netmob_for_awsctd.csv
+/AWSCTD/netmob_metadata.csv
+/AWSCTD/trained_model.keras
+/AWSCTD/ANOMALY_REPORT.txt
