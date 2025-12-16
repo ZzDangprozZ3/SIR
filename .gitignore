@@ -18,7 +18,11 @@ AWSCTD/env/
 AWSCTD/results.db
 AWSCTD/trained_model.keras
 AWSCTD/ANOMALY_REPORT.txt
-*.h5
+/AWSCTD/workflow/netmob_for_awsctd.csv
+/AWSCTD/workflow/heatmaps_csv.png
+/AWSCTD/workflow/debug_heatmap.png
+/AWSCTD/netmob_for_awsctd.csv
+/AWSCTD/netmob_metadata.csv
 CausalRCA/
 
 
@@ -37,11 +41,3 @@ Thumbs.db
 /Facebook/
 /Netflix/
 /NetMob23/
-
-/AWSCTD/workflow/netmob_for_awsctd.csv
-/AWSCTD/workflow/heatmaps_csv.png
-/AWSCTD/workflow/debug_heatmap.png
-/AWSCTD/netmob_for_awsctd.csv
-/AWSCTD/netmob_metadata.csv
-/AWSCTD/trained_model.keras
-/AWSCTD/ANOMALY_REPORT.txt
