@@ -20,6 +20,6 @@ RUN pip install --upgrade pip && \
 
 RUN mkdir -p /app/NetMob23 /app/workflow /app/AWSCTD
 
-WORKDIR /app/AWSCTD
+WORKDIR /app
 
 CMD ["bash"]
