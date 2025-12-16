@@ -16,6 +16,8 @@ AWSCTD/ACCLOSS/
 AWSCTD/CM/
 AWSCTD/env/
 AWSCTD/results.db
+AWSCTD/trained_model.keras
+AWSCTD/ANOMALY_REPORT.txt
 *.h5
 CausalRCA/
 
