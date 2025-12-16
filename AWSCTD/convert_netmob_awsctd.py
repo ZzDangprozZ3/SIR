@@ -3,18 +3,37 @@ import numpy as np
 import glob
 import os
 import sys
+import configparser
 
 # CONFIGURATION
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-INPUT_PATH = '/data'
+if os.path.exists('/data'):
+    INPUT_PATH = '/data'
+else:
+    # Fallback pour test local sans Docker
+    INPUT_PATH = os.path.abspath(os.path.join(BASE_DIR, '../../NetMob23/'))
+
 OUTPUT_FILE = os.path.join(BASE_DIR, 'netmob_for_awsctd.csv')
 OUTPUT_META_FILE = os.path.join(BASE_DIR, 'netmob_metadata.csv')
-ANOMALY_FILE = os.path.join(BASE_DIR, '../anomalies.txt')
+
+ANOMALY_FILE = os.path.join(BASE_DIR, 'anomalies.txt')
+
+config_path = os.path.join(BASE_DIR, 'config.ini')
+if os.path.exists(config_path):
+    try:
+        config = configparser.ConfigParser()
+        config.read(config_path)
+        # On lit la valeur ou on garde 500 si absente
+        MAX_FILES = config.getint('MAIN', 'nMaxFiles', fallback=500)
+        print(f"[CONFIG] Limite de fichiers chargée depuis config.ini : {MAX_FILES}")
+    except Exception as e:
+        print(f"[WARNING] Erreur lecture config.ini : {e}. Utilisation défaut : {MAX_FILES}")
+else:
+    print("[WARNING] config.ini introuvable. Utilisation défaut : 500")
 
 # Paramètres AWSCTD
-MAX_FILES = 500
-VOCAB_SIZE = 100    
-#FIXED_LENGTH = 96
+VOCAB_SIZE = 100
+
 
 def detect_sequence_length(files):
     """Scanne le premier fichier valide pour déterminer la longueur standard"""
@@ -129,7 +148,6 @@ def add_labels_and_save(df,dates_list, metadata,ANOMALY_DATES):
     print(f"   -> Anomalies : {count_anom} / {len(df)} ({(count_anom/len(df))*100:.2f}%)")
     
     print(f"Sauvegarde : {OUTPUT_FILE}")
-    # Séparateur virgule standard
     df.to_csv(OUTPUT_FILE, index=False, header=False, sep=',')
 
     # Sauvegarde des métadonnées
