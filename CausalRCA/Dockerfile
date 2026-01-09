@@ -16,7 +16,7 @@ RUN pip install --no-cache-dir \
     pandas \
     matplotlib \
     tqdm \
-    networkx \
+    networkx==2.8.8 \
     scikit-learn \
     requests \
     argparse \
