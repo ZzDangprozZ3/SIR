@@ -12,12 +12,13 @@ WORKDIR /app
 RUN pip install --no-cache-dir --upgrade pip
 
 RUN pip install --no-cache-dir \
-    numpy \
+    "numpy<2" \
     pandas \
     matplotlib \
     tqdm \
-    networkx==2.8.8 \
+    "networkx==2.8.8" \
     scikit-learn \
+    scikit-network \
     requests \
     argparse \
     configparser
