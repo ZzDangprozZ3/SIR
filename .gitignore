@@ -23,10 +23,14 @@ AWSCTD/ANOMALY_REPORT.txt
 /AWSCTD/workflow/debug_heatmap.png
 /AWSCTD/netmob_for_awsctd.csv
 /AWSCTD/netmob_metadata.csv
-CausalRCA/
 
 
 # CausalRCA
+CausalRCA/.ipynb_checkpoints/
+CausalRCA/data_collected/
+CausalRCA/figures/
+CausalRCA/pa_result/
+CausalRCA/venv/
 
 # OS files
 .DS_Store
