@@ -1,8 +1,13 @@
 #!/bin/bash
 
-echo "   STARTING CAUSAL RCA PIPELINE (NETMOB)   "
+# Fonction utilitaire pour lire le config.ini via Python
+get_config() {
+    python -c "import configparser; c=configparser.ConfigParser(); c.read('config.ini'); print(c.get('$1', '$2'))"
+}
 
-#Conversion des données
+echo "   STARTING CAUSAL RCA PIPELINE    "
+
+# Conversion des données
 if [ -f "convert_netmob_causalrca.py" ]; then
     echo ">>> 1/3 Conversion des données NetMob..."
     python convert_netmob_causalrca.py
@@ -14,18 +19,25 @@ fi
 # Adaptation dynamique du code Python
 echo ">>> 2/3 Configuration du script d'entraînement..."
 
+SVC_NAME=$(get_config 'PATHS' 'service_name')
+PREFIX=$(get_config 'PATHS' 'output_prefix')
+
 TARGET_SCRIPT="train_all_services.py"
 
-# On utilise sed pour remplacer la définition de la liste 'names'
-sed -i "s/^names = .*/names = ['top_tiles']/" $TARGET_SCRIPT
-
-echo ">>> Code modifié : Variable 'names' mise à jour pour NetMob."
+sed -i "s/^names = .*/names = ['$SVC_NAME']/" $TARGET_SCRIPT
+echo ">>> Variable 'names' remplacée par ['$SVC_NAME']"
 
 # Lancement de l'entraînement
 echo ">>> 3/3 Lancement de l'entraînement CausalRCA..."
-# --indx 0 : correspond à l'index de 'top_tiles' dans notre liste liste
-# --atype "netmob_" : le préfixe défini dans le convertisseur
-python $TARGET_SCRIPT --indx 0 --atype "netmob_" --eta 10
+
+# Récupération des hyperparamètres
+INDX=$(get_config 'TRAINING' 'service_index')
+ETA=$(get_config 'TRAINING' 'eta')
+GAMMA=$(get_config 'TRAINING' 'gamma')
+
+echo ">>> Paramètres: Index=$INDX, Prefix=$PREFIX, Eta=$ETA, Gamma=$GAMMA"
+
+python $TARGET_SCRIPT --indx $INDX --atype "$PREFIX" --eta $ETA --gamma $GAMMA
 
 
 echo "   PIPELINE TERMINÉ. "
