@@ -54,6 +54,10 @@ Xtr, Ytr, m_nParametersCount, m_nClassCount, m_nWordCount = AWSCTDReadData.ReadD
 print (Ytr)
 gc.collect()
 
+# Lecture des nouvelles sections
+sSavedModelName = config.get('FILES', 'sSavedModel', fallback='trained_model.keras')
+sDbName = config.get('FILES', 'sDatabase', fallback='results.db')
+
 import math
 
 def step_decay(epoch):
@@ -223,7 +227,7 @@ for train, test in kfold.split(Xtr, Ytr):
 
 
 		print("\n[INFO] Sauvegarde intermédiaire du modèle...")
-		model_filename = "trained_model.keras"
+		model_filename = sSavedModelName
 		model_save_path = os.path.join(m_sWorkingDir, model_filename)
 		model.save(model_save_path)
 		print(f"Modèle sauvegardé : {model_save_path}")
@@ -271,7 +275,7 @@ dAcc4 = arrAcc[3]
 dAcc5 = arrAcc[4]
 
 import sqlite3
-con = sqlite3.connect('results.db')
+con = sqlite3.connect(sDbName)
 sTestTag = m_sModel
 result = (m_sDataFile, m_nParametersCount, m_nClassCount, nEpochs, nBatchSize, sModel, tmExec, dAcc, dLoss, dTimeTrain, dTimeTest, sTestTag, dAccStd, dLossStd, sTime, dTimePredForOneSample, dAcc1, dAcc2, dAcc3, dAcc4, dAcc5, sConfig)
 sql = """INSERT INTO results 

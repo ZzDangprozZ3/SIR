@@ -7,32 +7,59 @@ import configparser
 
 # CONFIGURATION
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-if os.path.exists('/data'):
-    INPUT_PATH = '/data'
-else:
-    # Fallback pour test local sans Docker
-    INPUT_PATH = os.path.abspath(os.path.join(BASE_DIR, '../../NetMob23/'))
-
-OUTPUT_FILE = os.path.join(BASE_DIR, 'netmob_for_awsctd.csv')
-OUTPUT_META_FILE = os.path.join(BASE_DIR, 'netmob_metadata.csv')
-
-ANOMALY_FILE = os.path.join(BASE_DIR, 'anomalies.txt')
-
 config_path = os.path.join(BASE_DIR, 'config.ini')
+
+# Valeurs par défaut
+MAX_FILES = 500
+VOCAB_SIZE = 100
+SEQ_LEN_DEFAULT = 96
+OUTPUT_CSV_NAME = 'netmob_for_awsctd.csv'
+OUTPUT_META_NAME = 'netmob_metadata.csv'
+ANOMALIES_NAME = 'anomalies.txt'
+LOCAL_DATA_PATH = '../../NetMob23/'
+
 if os.path.exists(config_path):
     try:
         config = configparser.ConfigParser()
         config.read(config_path)
-        # On lit la valeur ou on garde 500 si absente
-        MAX_FILES = config.getint('MAIN', 'nMaxFiles', fallback=500)
-        print(f"[CONFIG] Limite de fichiers chargée depuis config.ini : {MAX_FILES}")
-    except Exception as e:
-        print(f"[WARNING] Erreur lecture config.ini : {e}. Utilisation défaut : {MAX_FILES}")
-else:
-    print("[WARNING] config.ini introuvable. Utilisation défaut : 500")
+        
+        # --- BLOC CORRIGÉ ---
+        max_files_str = config.get('MAIN', 'nMaxFiles', fallback='500')
+        if max_files_str.lower() == 'none':
+            MAX_FILES = None
+        else:
+            try:
+                MAX_FILES = int(max_files_str)
+            except ValueError:
+                print(f"[WARNING] Valeur '{max_files_str}' invalide. Utilisation de None.")
+                MAX_FILES = None
+        
+        # J'AI SUPPRIMÉ LA LIGNE 'config.getint' QUI ETAIT ICI
+        # --------------------
 
-# Paramètres AWSCTD
-VOCAB_SIZE = 100
+        # Lecture DATA (Nouveau)
+        VOCAB_SIZE = config.getint('DATA', 'nVocabSize', fallback=VOCAB_SIZE)
+        SEQ_LEN_DEFAULT = config.getint('DATA', 'nSequenceLength', fallback=SEQ_LEN_DEFAULT)
+        LOCAL_DATA_PATH = config.get('DATA', 'sLocalDataPath', fallback=LOCAL_DATA_PATH)
+
+        # Lecture FILES (Nouveau)
+        OUTPUT_CSV_NAME = config.get('FILES', 'sOutputCSV', fallback=OUTPUT_CSV_NAME)
+        OUTPUT_META_NAME = config.get('FILES', 'sOutputMeta', fallback=OUTPUT_META_NAME)
+        ANOMALIES_NAME = config.get('FILES', 'sAnomalies', fallback=ANOMALIES_NAME)
+        
+        print(f"[CONFIG] Chargée. MaxFiles: {MAX_FILES}, Vocab: {VOCAB_SIZE}")
+    except Exception as e:
+        print(f"[WARNING] Erreur config.ini : {e}")
+
+# Mise à jour des chemins avec les variables
+if os.path.exists('/data'):
+    INPUT_PATH = '/data'
+else:
+    INPUT_PATH = os.path.abspath(os.path.join(BASE_DIR, LOCAL_DATA_PATH))
+
+OUTPUT_FILE = os.path.join(BASE_DIR, OUTPUT_CSV_NAME)
+OUTPUT_META_FILE = os.path.join(BASE_DIR, OUTPUT_META_NAME)
+ANOMALY_FILE = os.path.join(BASE_DIR, ANOMALIES_NAME)
 
 
 def detect_sequence_length(files):
@@ -44,11 +71,11 @@ def detect_sequence_length(files):
                 parts = line.strip().split()
                 if len(parts) > 2:
                     detected_len = len(parts) - 1
-                    print(f"📏 Auto-detection de la longueur : {detected_len} mesures")
+                    print(f"Auto-detection de la longueur : {detected_len} mesures")
                     return detected_len
         except:
             continue
-    return 96 # Valeur par défaut si échec
+    return SEQ_LEN_DEFAULT
 
 # DICTIONNAIRE DES ANOMALIES (Labels = 1)
 def load_anomalies(file_path):
