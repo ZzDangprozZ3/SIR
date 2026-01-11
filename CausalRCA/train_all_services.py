@@ -43,6 +43,9 @@ args = parser.parse_args()
 CONFIG.cuda = torch.cuda.is_available()
 CONFIG.factor = not CONFIG.no_factor
 
+device_name = "GPU" if CONFIG.cuda else "CPU"
+print(f">>> TRAIN: Démarrage sur {device_name}. Gamma={args.gamma}, Eta={args.eta}", flush=True)
+
 # torch.manual_seed(CONFIG.seed)
 # if CONFIG.cuda:
 #     torch.cuda.manual_seed(CONFIG.seed)
@@ -54,13 +57,24 @@ from sklearn.metrics import precision_recall_fscore_support
 
 #f = open('collected_data_all_cpu.pkl', 'rb')
 names = ['top_tiles']
-metrics = ['ctn_latency', 'ctn_cpu', 'ctn_mem', 'ctn_write', 'ctn_read', 'ctn_net_in', 'ctn_net_out']
+#metrics = ['ctn_latency', 'ctn_cpu', 'ctn_mem', 'ctn_write', 'ctn_read', 'ctn_net_in', 'ctn_net_out']
 
 idx = args.indx
 atype = args.atype
 #idx = 2
-f = open('./data_collected/'+atype+names[idx]+'.pkl', 'rb')
-data = pkl.load(f)
+#f = open('./data_collected/'+atype+names[idx]+'.pkl', 'rb')
+#data = pkl.load(f)
+file_path = './data_collected/'+atype+names[idx]+'.pkl'
+print(f">>> TRAIN: Chargement de {file_path}...", flush=True)
+
+try:
+    f = open(file_path, 'rb')
+    data = pkl.load(f)
+    print(f">>> [INFO] Données chargées. Dimensions : {data.shape}", flush=True)
+except Exception as e:
+    print(f"ERREUR CRITIQUE chargement données: {e}", flush=True)
+    exit(1)
+
 
 #data = data.iloc[:,1:]
 data_sample_size = data.shape[0]
@@ -77,6 +91,7 @@ train_data = data
 #===================================
 # load modules
 #===================================
+print(">>> TRAIN: Initialisation du modèle DAG-GNN...", flush=True)
 # Generate off-diagonal interaction graph
 off_diag = np.ones([data_variable_size, data_variable_size]) - np.eye(data_variable_size)
 
@@ -245,7 +260,7 @@ def train(epoch, best_val_loss, lambda_A, c_A, optimizer):
         
         #print(loss)
         loss.backward()
-        loss = optimizer.step()
+        optimizer.step()
 
         myA.data = stau(myA.data, CONFIG.tau_A*lr)
 
@@ -260,11 +275,15 @@ def train(epoch, best_val_loss, lambda_A, c_A, optimizer):
         nll_train.append(loss_nll.item())
         kl_train.append(loss_kl.item())
 
+        if epoch % 10 == 0:
+            print(f"   Epoch: {epoch:04d} | Loss: {loss.item():.4f} | h(A): {h_A.item():.4f}", flush=True)
+        
     return np.mean(np.mean(kl_train)  + np.mean(nll_train)), np.mean(nll_train), np.mean(mse_train), graph, origin_A
 
 #===================================
 # main
 #===================================
+print(">>> TRAIN: Début de la boucle d'optimisation...", flush=True)
 
 gamma = args.gamma
 eta = args.eta
@@ -291,7 +310,7 @@ M_loss = []
 start_time = time.time()
 try:
     for step_k in range(k_max_iter):
-        #print(step_k)
+        print(f">>> STEP: Itération externe {step_k+1}/{k_max_iter} (c_A={c_A:.2e})", flush=True)
         while c_A < 1e+20:
             for epoch in range(CONFIG.epochs):
                 #print(epoch)
@@ -322,8 +341,10 @@ try:
             # update parameters
             A_new = origin_A.data.clone()
             h_A_new = _h_A(A_new, data_variable_size)
+            print(f"   CHECK: Fin cycle interne. h(A)={h_A_new.item():.5f}", flush=True)
             if h_A_new.item() > gamma * h_A_old:
                 c_A*=eta
+                print(f"   UPDATE: Augmentation pénalité c_A -> {c_A:.2e}", flush=True)
             else:
                 break
 
@@ -351,6 +372,7 @@ try:
 except KeyboardInterrupt:
     print('Done!')
 
+print(">>> RESULT: Génération des graphes et scores...", flush=True)
 end_time = time.time()
 #print("Time spent: ",end_time-start_time)
 print(names[idx])
