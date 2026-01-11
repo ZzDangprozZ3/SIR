@@ -7,15 +7,29 @@ __pycache__/
 *.parquet
 *.npy
 
+# Virtual environment
+.venv/
+
 # AWSCTD
-venv/
 AWSCTD/CSV/
 AWSCTD/ACCLOSS/
 AWSCTD/CM/
 AWSCTD/env/
 AWSCTD/results.db
-*.h5
+AWSCTD/trained_model.keras
+AWSCTD/ANOMALY_REPORT.txt
+/AWSCTD/workflow/netmob_for_awsctd.csv
+/AWSCTD/workflow/heatmaps_csv.png
+/AWSCTD/workflow/debug_heatmap.png
+/AWSCTD/netmob_for_awsctd.csv
+/AWSCTD/netmob_metadata.csv
 
+# CausalRCA
+CausalRCA/.ipynb_checkpoints/
+CausalRCA/data_collected/
+CausalRCA/figures/
+CausalRCA/pa_result/
+CausalRCA/venv/
 
 # OS files
 .DS_Store
@@ -25,5 +39,7 @@ Thumbs.db
 .vscode/
 .idea/
 
-# environment
-.venv/
+# data
+/Facebook/
+/Netflix/
+/NetMob23/
