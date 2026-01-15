@@ -69,7 +69,7 @@ def run_framework(framework_name, force_rebuild=False):
     )
     
     subprocess.call(docker_cmd, shell=True)
-    print(f"\n--- FIN {framework_name.upper()} ---")
+    print(f"\n FIN {framework_name.upper()} ")
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
