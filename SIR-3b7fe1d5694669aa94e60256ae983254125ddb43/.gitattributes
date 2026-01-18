@@ -1,4 +1,0 @@
-# Forcer les fins de ligne UNIX (LF) pour les scripts shell et docker
-*.sh text eol=lf
-Dockerfile text eol=lf
-*.py text eol=lf
