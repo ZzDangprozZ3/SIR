@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  traceanomaly:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traceanomaly_container
+    
+    volumes:
+      - ./:/app                          # Mount toàn bộ project
+      - ./webankdata:/app/webankdata    # Output
+    
+    environment:
+      - TF_CPP_MIN_LOG_LEVEL=2
+      - PYTHONUNBUFFERED=1
+    
+    stdin_open: true
+    tty: true
