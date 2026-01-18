@@ -3,7 +3,7 @@ import math
 
 # --- Bước 1: Đọc dữ liệu từ CSV ---
 data = []
-with open(r"C:\Users\USER\OneDrive\Máy tính\3TC\SIR\TraceAnomaly\TraceAnomaly\webankdata\rnvp_result.csv", newline='') as f:
+with open(os.path.join(os.getcwd(), "webankdata", "rnvp_result.csv"), newline='') as f:
     reader = csv.DictReader(f)
     for row in reader:
         data.append({"id": row["id"], "score": float(row["score"])})
