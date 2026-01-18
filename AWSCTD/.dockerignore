@@ -1,7 +1,0 @@
-.git
-.venv
-__pycache__
-*.pyc
-result.db
-trained_model.keras
-ROC/
