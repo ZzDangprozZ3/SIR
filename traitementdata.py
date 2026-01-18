@@ -8,8 +8,8 @@ import json
 # À modifier si necessaire
 input_file = os.path.join(os.getcwd(), "faults_TraceAnomaly.csv")
 input_dirs = [
-    r"C:\Users\USER\OneDrive\Máy tính\3TC\SIR\CleUSB\Dataset NetMob23\Facebook1\DL",
-    r"C:\Users\USER\OneDrive\Máy tính\3TC\SIR\CleUSB\Dataset NetMob23\Netflix1\Netflix\DL"
+    "/data/facebook",
+    "/data/netflix"
 ]
 output_file = os.path.join(os.getcwd(), "merged_flows")
 
