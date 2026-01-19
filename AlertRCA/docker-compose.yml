@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: alert-rca-app
+    volumes:
+      - ./:/app  # mount toàn bộ thư mục project vào /app trong container
+      - ../../CleUSB/Dataset NetMob23/Facebook1/DL/:/data/facebook  # mount thư mục data vào /data trong container
+      - ../../CleUSB/Dataset NetMob23/Netflix1/Netflix/DL/:/data/netflix  # mount thư mục data vào /data trong container
+    working_dir: /app
+    command: sh -c "python traitementdata.py && python -m AlertRCA --dataset A_NetMob --modeldir A_NetMob"
+   # chạy file chính
