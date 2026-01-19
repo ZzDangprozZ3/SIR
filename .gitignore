@@ -9,7 +9,6 @@ __pycache__/
 *.npy
 
 # Virtual environment
-# Virtual environment
 .venv/
 
 # AWSCTD
@@ -17,7 +16,6 @@ AWSCTD/CSV/
 AWSCTD/ACCLOSS/
 AWSCTD/CM/
 AWSCTD/env/
-AWSCTD/results.db
 AWSCTD/trained_model.keras
 AWSCTD/ANOMALY_REPORT.txt
 /AWSCTD/workflow/netmob_for_awsctd.csv
