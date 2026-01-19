@@ -28,9 +28,9 @@ else:
     TOP_N = 15
     GEOJSON_PATH = 'Lyon.geojson'
 
-def safe_float_sum(str_vals):
-    """Convertit une liste de strings en somme de floats"""
-    total = 0.0
+def safe_float_convert(str_vals):
+    """Convertit une liste de strings en liste de floats"""
+    floats = [] 
     for x in str_vals:
         try:
             val = float(x)
