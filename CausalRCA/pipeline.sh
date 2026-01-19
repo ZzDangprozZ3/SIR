@@ -1,10 +1,17 @@
 #!/bin/bash
 
 # Configuration
-ANOMALY_FILE="/data/netmob_for_awsctd.csv" # Nom du fichier dans le volume monté
+get_config() {
+    python -c "import configparser; c=configparser.ConfigParser(); c.read('config.ini'); print(c.get('$1', '$2', fallback='$3'))"
+}
 
 echo "   STARTING CAUSAL RCA PIPELINE    "
 
+
+ANOMALY_FILENAME=$(get_config 'PATHS' 'anomalies_file' 'ANOMALY_REPORT.txt')
+ANOMALY_FILE="/data/$ANOMALY_FILENAME"
+
+echo ">>> Fichier cible détecté : $ANOMALY_FILE"
 # 1. Conversion en Batch
 if [ -f "$ANOMALY_FILE" ]; then
     echo ">>> 1/2 Génération des datasets pour chaque anomalie..."
