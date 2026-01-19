@@ -37,11 +37,33 @@ parser.add_argument('--indx', type=int, default=0, help='index')
 parser.add_argument('--atype', type=str, default='cpu-hog1_', help='anomaly type')
 parser.add_argument('--gamma', type=float, default=0.25, help='gamma')
 parser.add_argument('--eta', type=int, default=10, help='eta')
+parser.add_argument('--epochs', type=int, default=None, help='Override number of epochs')
+parser.add_argument('--data_file', type=str, default='', help='Chemin du fichier .pkl à analyser')
 args = parser.parse_args()
 
 
 CONFIG.cuda = torch.cuda.is_available()
 CONFIG.factor = not CONFIG.no_factor
+
+if args.data_file and os.path.exists(args.data_file):
+    print(f"Chargement du fichier : {args.data_file}")
+    with open(args.data_file, 'rb') as f:
+        data = pkl.load(f)
+    
+    # On récupère les noms des tuiles directement depuis les colonnes
+    names = list(data.columns)
+    print(f"Noeuds détectés ({len(names)}) : {names}")
+    
+    data = data.values
+else:
+    print("ERREUR CRITIQUE : Aucun fichier de données valide fourni via --data_file")
+    exit(1)
+
+if args.epochs is not None:
+    CONFIG.epochs = args.epochs
+
+device_name = "GPU" if CONFIG.cuda else "CPU"
+print(f">>> TRAIN: Démarrage sur {device_name}. Gamma={args.gamma}, Eta={args.eta}", flush=True)
 
 # torch.manual_seed(CONFIG.seed)
 # if CONFIG.cuda:
@@ -54,13 +76,24 @@ from sklearn.metrics import precision_recall_fscore_support
 
 #f = open('collected_data_all_cpu.pkl', 'rb')
 names = ['top_tiles']
-metrics = ['ctn_latency', 'ctn_cpu', 'ctn_mem', 'ctn_write', 'ctn_read', 'ctn_net_in', 'ctn_net_out']
+#metrics = ['ctn_latency', 'ctn_cpu', 'ctn_mem', 'ctn_write', 'ctn_read', 'ctn_net_in', 'ctn_net_out']
 
 idx = args.indx
 atype = args.atype
 #idx = 2
-f = open('./data_collected/'+atype+names[idx]+'.pkl', 'rb')
-data = pkl.load(f)
+#f = open('./data_collected/'+atype+names[idx]+'.pkl', 'rb')
+#data = pkl.load(f)
+file_path = './data_collected/'+atype+names[idx]+'.pkl'
+print(f">>> TRAIN: Chargement de {file_path}...", flush=True)
+
+try:
+    f = open(file_path, 'rb')
+    data = pkl.load(f)
+    print(f">>> [INFO] Données chargées. Dimensions : {data.shape}", flush=True)
+except Exception as e:
+    print(f"ERREUR CRITIQUE chargement données: {e}", flush=True)
+    exit(1)
+
 
 #data = data.iloc[:,1:]
 data_sample_size = data.shape[0]
@@ -77,6 +110,7 @@ train_data = data
 #===================================
 # load modules
 #===================================
+print(">>> TRAIN: Initialisation du modèle DAG-GNN...", flush=True)
 # Generate off-diagonal interaction graph
 off_diag = np.ones([data_variable_size, data_variable_size]) - np.eye(data_variable_size)
 
@@ -245,7 +279,7 @@ def train(epoch, best_val_loss, lambda_A, c_A, optimizer):
         
         #print(loss)
         loss.backward()
-        loss = optimizer.step()
+        optimizer.step()
 
         myA.data = stau(myA.data, CONFIG.tau_A*lr)
 
@@ -260,11 +294,15 @@ def train(epoch, best_val_loss, lambda_A, c_A, optimizer):
         nll_train.append(loss_nll.item())
         kl_train.append(loss_kl.item())
 
+        if epoch % 10 == 0:
+            print(f"   Epoch: {epoch:04d} | Loss: {loss.item():.4f} | h(A): {h_A.item():.4f}", flush=True)
+        
     return np.mean(np.mean(kl_train)  + np.mean(nll_train)), np.mean(nll_train), np.mean(mse_train), graph, origin_A
 
 #===================================
 # main
 #===================================
+print(">>> TRAIN: Début de la boucle d'optimisation...", flush=True)
 
 gamma = args.gamma
 eta = args.eta
@@ -291,7 +329,7 @@ M_loss = []
 start_time = time.time()
 try:
     for step_k in range(k_max_iter):
-        #print(step_k)
+        print(f">>> STEP: Itération externe {step_k+1}/{k_max_iter} (c_A={c_A:.2e})", flush=True)
         while c_A < 1e+20:
             for epoch in range(CONFIG.epochs):
                 #print(epoch)
@@ -322,8 +360,10 @@ try:
             # update parameters
             A_new = origin_A.data.clone()
             h_A_new = _h_A(A_new, data_variable_size)
+            print(f"   CHECK: Fin cycle interne. h(A)={h_A_new.item():.5f}", flush=True)
             if h_A_new.item() > gamma * h_A_old:
                 c_A*=eta
+                print(f"   UPDATE: Augmentation pénalité c_A -> {c_A:.2e}", flush=True)
             else:
                 break
 
@@ -351,6 +391,7 @@ try:
 except KeyboardInterrupt:
     print('Done!')
 
+print(">>> RESULT: Génération des graphes et scores...", flush=True)
 end_time = time.time()
 #print("Time spent: ",end_time-start_time)
 print(names[idx])
@@ -368,15 +409,38 @@ plt.savefig("metrics_causality.png")
 
 # PageRank
 from sknetwork.ranking import PageRank
-pagerank = PageRank()
-scores = pagerank.fit_transform(np.abs(adj.T))
-#print(scores)
-#cmap = plt.cm.coolwarm
 
-score_dict = {}
-for i,s in enumerate(scores):
-    score_dict[i] = s
-#print(sorted(score_dict.items(), key=lambda item:item[1], reverse=True))
-sorted_dict = sorted(score_dict.items(), key=lambda item:item[1], reverse=True)
-for i in range(len(sorted_dict)):
-    print(i+1, sorted_dict[i])
+try:
+    # On utilise la transposée (adj.T) car on cherche la cause (source), pas la destination
+    G_pr = nx.from_numpy_matrix(np.abs(adj.T), create_using=nx.DiGraph)
+    
+    # Calcul du PageRank avec NetworkX
+    score_dict = nx.pagerank(G_pr, alpha=0.85, max_iter=1000)
+    
+    # Tri des résultats
+    sorted_dict = sorted(score_dict.items(), key=lambda item: item[1], reverse=True)
+    
+    print("\nCLASSEMENT DES CAUSES RACINES (PageRank)", flush=True)
+    for rank, (node_idx, score) in enumerate(sorted_dict):
+        # On affiche l'index de la tuile (0 à 14) et son score
+        print(f"   #{rank+1} : Tuile Index {node_idx} (Score: {score:.4f})", flush=True)
+ 
+    # Sauvegarde CSV des scores
+    pd.DataFrame(sorted_dict, columns=['Tile_Index', 'Score']).to_csv('pagerank_results.csv', index=False)
+    print("   Résultats sauvegardés dans 'pagerank_results.csv'", flush=True)
+
+except Exception as e:
+    print(f"   Erreur critique lors du PageRank : {e}", flush=True)
+
+
+# --- SAUVEGARDE JSON ---
+import json
+output_json_path = args.data_file.replace('.pkl', '_result.json')
+results = {
+    "target_file": args.data_file,
+    "root_cause_ranking": sorted_dict  # sorted_dict vient du PageRank juste au dessus
+}
+
+with open(output_json_path, 'w') as f:
+    json.dump(results, f, indent=4)
+print(f"SUCCESS : Résultats sauvegardés dans : {output_json_path}")
