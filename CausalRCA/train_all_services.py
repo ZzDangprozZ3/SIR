@@ -75,6 +75,7 @@ from sklearn.metrics import precision_recall_fscore_support
 #f = open('./data_old/collected_data_n_shipping_mem_rt.pkl', 'rb')
 
 #f = open('collected_data_all_cpu.pkl', 'rb')
+"""
 names = ['top_tiles']
 #metrics = ['ctn_latency', 'ctn_cpu', 'ctn_mem', 'ctn_write', 'ctn_read', 'ctn_net_in', 'ctn_net_out']
 
@@ -93,7 +94,7 @@ try:
 except Exception as e:
     print(f"ERREUR CRITIQUE chargement données: {e}", flush=True)
     exit(1)
-
+"""
 
 #data = data.iloc[:,1:]
 data_sample_size = data.shape[0]
@@ -233,7 +234,7 @@ def train(epoch, best_val_loss, lambda_A, c_A, optimizer):
 
     for i in range(1):
         data = train_data[i*data_sample_size:(i+1)*data_sample_size]
-        data = torch.tensor(data.to_numpy().reshape(data_sample_size,data_variable_size,1))
+        data = torch.tensor(data.reshape(data_sample_size,data_variable_size,1))
         if CONFIG.cuda:
             data = data.cuda()
         data = Variable(data).double()
@@ -393,9 +394,15 @@ except KeyboardInterrupt:
 
 print(">>> RESULT: Génération des graphes et scores...", flush=True)
 end_time = time.time()
-#print("Time spent: ",end_time-start_time)
-print(names[idx])
+print("Time spent: ",end_time-start_time)
+
+base_name = args.data_file.replace('.pkl', '')
+output_image_path = base_name + '.png'
+output_json_path = base_name + '_result.json'
+
+
 adj = graph
+
 #print(adj)
 org_G = nx.from_numpy_matrix(adj, parallel_edges=True, create_using=nx.DiGraph)
 pos=nx.circular_layout(org_G)
@@ -433,14 +440,55 @@ except Exception as e:
     print(f"   Erreur critique lors du PageRank : {e}", flush=True)
 
 
-# --- SAUVEGARDE JSON ---
-import json
+
+output_image_path = args.data_file.replace('.pkl', '.png')
+
+# try:
+    # Création du graphe NetworkX pour affichage
+    # adj = graph
+    # org_G = nx.from_numpy_matrix(adj, parallel_edges=True, create_using=nx.DiGraph)
+
+    
+    # plt.figure(figsize=(8, 6))
+    # pos = nx.circular_layout(org_G)
+    # nx.draw(org_G, pos=pos, with_labels=True, node_color='lightblue', node_size=500, arrowstyle='->', arrowsize=20)
+    
+    # plt.title(f"Causal Graph: {os.path.basename(args.data_file)}")
+    # plt.savefig(output_image_path)
+    # plt.close()
+    # print(f"    Graphe sauvegardé : {output_image_path}", flush=True)
+# except Exception as e:
+    # print(f"   WARNING: Impossible de générer l'image : {e}", flush=True)
+
+
+
+output_image_path = args.data_file.replace('.pkl', '.png')
+
+try:
+    adj = graph
+    org_G = nx.from_numpy_matrix(adj, parallel_edges=True, create_using=nx.DiGraph)
+    
+
+    plt.figure(figsize=(8, 6)) 
+    pos = nx.circular_layout(org_G)
+    
+    nx.draw(org_G, pos=pos, with_labels=True, node_color='lightblue', node_size=500, arrowstyle='->', arrowsize=20)
+    plt.title(f"Causal Graph: {os.path.basename(args.data_file)}")
+    
+    plt.savefig(output_image_path)
+    plt.close() 
+    print(f"   Graphe sauvegardé : {output_image_path}", flush=True)
+    
+except Exception as e:
+    print(f"   WARNING :Impossible de générer l'image : {e}", flush=True)
+
 output_json_path = args.data_file.replace('.pkl', '_result.json')
 results = {
     "target_file": args.data_file,
-    "root_cause_ranking": sorted_dict  # sorted_dict vient du PageRank juste au dessus
+    "nodes": names, 
+    "root_cause_ranking": sorted_dict 
 }
 
 with open(output_json_path, 'w') as f:
     json.dump(results, f, indent=4)
-print(f"SUCCESS : Résultats sauvegardés dans : {output_json_path}")
+print(f"Résultats sauvegardés : {output_json_path}", flush=True)

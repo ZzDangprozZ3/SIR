@@ -96,9 +96,9 @@ def parse_anomaly_file(filepath):
                 })
 
             else:
-                # DEBUG : Affiche les 3 premières lignes rejetées pour comprendre pourquoi
+                # Affiche les 3 premières lignes rejetées pour comprendre pourquoi
                 if i < 3: 
-                    print(f"     [DEBUG REJET Ligne {i}] Date trouvée? {bool(match_date)} | Tile trouvée? {bool(match_tile)}")
+                    print(f"     DEBUG REJET Ligne {i}: Date trouvée? {bool(match_date)} | Tile trouvée? {bool(match_tile)}")
                     print(f"     -> Contenu : {line.strip()}")
 
     print(f"   > {len(tasks)} anomalies détectées à traiter.")
@@ -130,7 +130,7 @@ def map_files_to_ids():
 
     if len(mapping) == 0 and len(files) > 0:
         print("\n" + "="*50)
-        print("[DIAGNOSTIC ECHEC INDEXATION]")
+        print("DIAGNOSTIC ECHEC INDEXATION")
         print("Le script voit les fichiers mais n'arrive pas à lire l'ID dans le nom.")
         print("Voici 5 exemples de fichiers trouvés mais rejetés :")
         for ex in rejected_examples:
@@ -212,13 +212,13 @@ if __name__ == "__main__":
 
     if args.anomalies_file:
         target_file = args.anomalies_file
-        print(f"MODE : Fichier spécifié manuellement -> {target_file}")
+        print(f"Fichier spécifié manuellement -> {target_file}")
     
     elif ANOMALIES_NAME:
         potential_path = os.path.join(INPUT_PATH, ANOMALIES_NAME)
         if os.path.exists(potential_path):
             target_file = potential_path
-            print(f"MODE : Utilisation du fichier par défaut (Config) -> {target_file}")
+            print(f"Utilisation du fichier par défaut (Config) -> {target_file}")
 
     # Lecture des configs globales
     if target_file and os.path.exists(target_file):
@@ -241,10 +241,10 @@ if __name__ == "__main__":
                     count += 1
             print(f" {count} datasets générés sur {len(tasks)} demandés.")
         else:
-             print("\n[ECHEC] Impossible de démarrer : GeoJSON ou Fichiers NetMob manquants.")
+             print("\nECHEC : Impossible de démarrer : GeoJSON ou Fichiers NetMob manquants.")
     else:
         print("="*60)
-        print("[ERREUR] Aucun fichier d'anomalies valide trouvé.")
+        print("ERREUR : Aucun fichier d'anomalies valide trouvé.")
         print(f"1. Vérifiez que le fichier '{ANOMALIES_NAME}' est bien présent dans votre dossier de données local")
         print(f"2. Vérifiez que le nom dans 'config.ini' (clé anomalies_file) est exactement le même.")
         print("="*60)
