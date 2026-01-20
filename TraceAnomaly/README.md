@@ -1,37 +1,54 @@
-# TraceAnomaly
-Detecting anomalous traces of microservice system.
+# TraceAnomaly – Version personnalisée pour NetMob
 
-# Paper
-Ping Liu, Haowen Xu, Qianyu Ouyang, Rui Jiao, Zhekang Chen, Shenglin Zhang, Jiahai Yang, Linlin Mo, Jice Zeng, Wenman Xue, Dan Pei. Unsupervised Detection of Microservice Trace Anomalies through Service-Level Deep Bayesian Networks". 31th International Symposium on Software Reliability Engineering (ISSRE). IEEE, 2020
+## 1️⃣ Présentation
 
-paper download（论文下载）：https://netman.aiops.org/wp-content/uploads/2020/09/%E5%88%98%E5%B9%B3issre.pdf
-## Dependencies
+`TraceAnomaly` est un **framework de détection d'anomalies** basé sur des traces réseau.  
+Cette version a été **adaptée pour le dataset NetMob**, permettant d'analyser les données, détecter les anomalies et générer des rapports détaillés.
 
-Python == 3.6
+---
 
-```shell
-pip install -r requirements.txt
-```
+## 2️⃣ Dataset
 
-### Docker Image
-TraceAnomaly can be run directly in the Docker image: **silence1990/docker_for_traceanomaly:latest**
+- **Dataset utilisé :** NetMob (format CSV/JSON)  
+- **Fichiers importants :**  
+  - `A_NetMob/` → données brutes  
+  - `TraceAnomaly/webankdata/rnvp_result` → répertoire où sont enregistrés les scores d'anomalies des timestamps
+  - `TraceAnomaly/faults_TraceAnomaly.csv` →  répertoire où sont enregistrés les anomalies détectées
 
-```bash
-docker pull silence1990/docker_for_traceanomaly:latest
-```
-## Dataset
-Training set: train_ticket/train.zip
+---
 
-Test normal traces: train_ticket/test_normal.zip
+## 3️⃣ Structure du projet
+TraceAnomaly/
+├── traceanomaly/             # package principale
+│   ├── __init__.py
+│   └── detection_anomaly.py
+├── train_ticket/             # données initiales
+├── webankdata/               # stocker les résultats
+├── docker-compose.yml
+├── Dockerfile
+├── pipeline.sh               # à lancer
+├── README.md
+├── requirements.txt
+└── traitementdata.py
 
-Test anomalous traces: train_ticket/test_abnormal.zip
-## Usage
+## 4️⃣ Workflow
 
-```shell
-./run.sh
-```
+1. **Prétraitement des données**
+   - Le script `traitementdata.py` est exécuté en premier.  
+   - Il transforme les datasets au **format d'entrée attendu par le framework**.  
+   - Résultat : des fichiers prêts pour l'entraînement et le scoring.
 
-## Comparison of Learning Distribution
+2. **Entraînement et scoring**
+   - Utilisation de **Docker** pour lancer l'environnement complet :
+   ```bash
+   docker compose run --rm --build traceanomaly
+   Le framework entraîne le modèle sur les données prétraitées.
+    Pour chaque timestamp, il calcule le score de log-vraisemblance.
+3. **Détection d'anomalies**
+    - Le module `detection_anomaly.py` analyse les scores de log-vraisemblance.
+    - Un timestamp est considéré comme anormal si son score est inférieur à la moyenne moins 2 fois l’écart-type.
+    - Les anomalies détectées sont enregistrées dans `faults_TraceAnomaly.csv` pour analyse ultérieure.
 
-![image](https://github.com/NetManAIOps/TraceAnomaly/blob/master/traceanomaly/performance.png)
+## 5️⃣ Utilisation
+`bash ./pipeline.sh`
 
