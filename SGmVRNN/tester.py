@@ -60,7 +60,19 @@ class Tester(object):
         # To collect the latent variable z at timestep T, as well as the corresponding max cate variable index
         for i, dataitem in enumerate(self.testloader,1):
             timestamps,labels,data = dataitem
-            data = data.to(self.device)
+            
+            data = data.to(self.device).float()
+
+# --- NetMob stabilization (same as training) ---
+            data = torch.log1p(data)
+            m = data.mean()
+            s = data.std()
+            data = (data - m) / (s + 1e-6)
+            data = torch.clamp(data, -10.0, 10.0)
+# ---------------------------------------------
+
+
+
             z_mean_post, z_logvar_post, z, z_mean_prior, z_logvar_prior, x_mu, x_logsigma, pi, logits, posterior_probs = self.forward_test(data)
             last_timestamp = timestamps[-1,-1,-1,-1]
             label_last_timestamp_tensor = labels[-1,-1,-1,-1]
@@ -164,7 +176,7 @@ def main():
                              args.start_epoch)
     
     else:
-        raise ValueError('Unknown encoder or decoder: {}'.format(args.enc_dec))
+        raise ValueError('Unknown checkpoints path: {}'.format(args.checkpoints_path))
 
     kpi_value_test = KpiReader(args.dataset_path)
     test_loader = torch.utils.data.DataLoader(kpi_value_test, 

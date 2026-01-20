@@ -33,7 +33,7 @@ class EncX(nn.Module):
     Input: x
         shape: [batch_size, 1, T, n, w]
     Output: x_hat
-        shape: [batch_size, 1, T, n, w] 
+        shape: [batch_size, T, enc_dim]
     Describe: get the summarized x 
     '''
     def __init__(self, enc_dim, enc='CNN', n=38, w=1, T=20):
@@ -43,65 +43,100 @@ class EncX(nn.Module):
         self.w = w
         self.T = T
         self.conv_dim = enc_dim
-        
+
+        # By default
+        self.is_generic = False
+
         if self.enc == 'CNN' and self.w == 1:
             if self.n == 36:
-                k0,k1,k2=3,2,2
-                s0,s1,s2=3,2,2
-                p0,p1,p2=0,0,0
-                s_d=(int(self.n/(k0*k1*k2)))
+                k0, k1, k2 = 3, 2, 2
+                s0, s1, s2 = 3, 2, 2
+                p0, p1, p2 = 0, 0, 0
+                s_d = int(self.n / (k0 * k1 * k2))
+
+                self.k0, self.k1, self.k2 = k0, k1, k2
+                self.s0, self.s1, self.s2 = s0, s1, s2
+                self.p0, self.p1, self.p2 = p0, p1, p2
+                self.cd = [32, s_d]
+
+                self.conv = nn.Sequential(
+                    ConvUnit1d(1, 8, kernel=self.k0, stride=self.s0, padding=self.p0),
+                    ConvUnit1d(8, 16, kernel=self.k1, stride=self.s1, padding=self.p1),
+                    ConvUnit1d(16, 32, kernel=self.k2, stride=self.s2, padding=self.p2),
+                )
+
+                self.conv_fc = nn.Sequential(
+                    LinearUnit(self.cd[0] * self.cd[1], self.conv_dim * 2),
+                    LinearUnit(self.conv_dim * 2, self.conv_dim),
+                )
+
             elif self.n == 38:
-                k0,k1,k2=2,2,2
-                s0,s1,s2=2,2,2
-                p0,p1,p2=1,0,0
-                s_d=(int((self.n+s0*p0)/(k0*k1*k2)))
+                k0, k1, k2 = 2, 2, 2
+                s0, s1, s2 = 2, 2, 2
+                p0, p1, p2 = 1, 0, 0
+                s_d = int((self.n + s0 * p0) / (k0 * k1 * k2))
+
+                self.k0, self.k1, self.k2 = k0, k1, k2
+                self.s0, self.s1, self.s2 = s0, s1, s2
+                self.p0, self.p1, self.p2 = p0, p1, p2
+                self.cd = [32, s_d]
+
+                self.conv = nn.Sequential(
+                    ConvUnit1d(1, 8, kernel=self.k0, stride=self.s0, padding=self.p0),
+                    ConvUnit1d(8, 16, kernel=self.k1, stride=self.s1, padding=self.p1),
+                    ConvUnit1d(16, 32, kernel=self.k2, stride=self.s2, padding=self.p2),
+                )
+
+                self.conv_fc = nn.Sequential(
+                    LinearUnit(self.cd[0] * self.cd[1], self.conv_dim * 2),
+                    LinearUnit(self.conv_dim * 2, self.conv_dim),
+                )
+
             else:
-                raise ValueError('Invalid kpi numbers: please choose from the set [36,38]')
-            self.k0,self.k1,self.k2=k0,k1,k2
-            self.s0,self.s1,self.s2=s0,s1,s2
-            self.p0,self.p1,self.p2=p0,p1,p2
-            self.cd = [32,s_d]
-            self.conv = nn.Sequential(
-                    ConvUnit1d(1, 8, kernel=self.k0, 
-                                    stride=self.s0, 
-                                    padding=self.p0), 
-                    ConvUnit1d(8, 16, kernel=self.k1,  
-                                      stride=self.s1, 
-                                      padding=self.p1), 
-                    ConvUnit1d(16, 32, kernel=self.k2, 
-                                       stride=self.s2, 
-                                       padding=self.p2)  
-                    )  
-            
-            self.conv_fc = nn.Sequential(
-                       LinearUnit(self.cd[0]*self.cd[1], self.conv_dim*2),
-                       LinearUnit(self.conv_dim*2, self.conv_dim))
+                # Generic encoder for any n != 36/38 (e.g., NetMob n=96)
+                self.is_generic = True
+                self.conv = None
+                self.cd = None
+                self.conv_fc = nn.Sequential(
+                    nn.Flatten(),  # (B,1,n) -> (B,n)
+                    nn.Linear(self.n, self.conv_dim * 2),
+                    nn.ReLU(),
+                    nn.Linear(self.conv_dim * 2, self.conv_dim),
+                )
         else:
             raise ValueError('Unknown encoder and decoder: {}'.format(self.enc))
 
     def enc_x(self, x):
+        # Always flatten to (-1,1,n) as the original code expects
+        x = x.view(-1, 1, self.n)
+
         if self.enc == 'CNN' and self.w == 1:
-            x = x.view(-1, 1, self.n)
-            x = self.conv(x)
-            x = x.view(-1, self.cd[0]*self.cd[1])
-            x = self.conv_fc(x)
+            if self.is_generic:
+                # MLP path
+                x = self.conv_fc(x)  # (B, conv_dim)
+            else:
+                # CNN path (36/38)
+                x = self.conv(x)
+                x = x.view(-1, self.cd[0] * self.cd[1])
+                x = self.conv_fc(x)
+
+            # reshape back to (B, T, conv_dim)
             x = x.view(-1, self.T, self.conv_dim)
-        else:
-            raise ValueError('Unknown encoder and decoder: {}'.format(self.enc))
-        return x
+            return x
+
+        raise ValueError('Unknown encoder and decoder: {}'.format(self.enc))
 
     def forward(self, x):
-        x_hat =  self.enc_x(x)
-        return x_hat
+        return self.enc_x(x)
 
 
 class DecX(nn.Module):
     '''
     Input: z
-        shape: [batch_size, 1, z_dim]
+        shape: [batch_size, dec_init_dim]
     Output: x_mu and x_logsigma
-        shape: [batch_size, 1, 1, n, w] 
-    Describe: Obtain the paramaters, i.e., mu & logsigma of likelihood function 
+        shape: [batch_size, 1, 1, n, w]
+    Describe: Obtain the parameters, i.e., mu & logsigma of likelihood function
     '''
     def __init__(self, enc_dim, dec_init_dim, dec='CNN', n=38, w=1, T=20):
         super(DecX, self).__init__()
@@ -111,82 +146,128 @@ class DecX(nn.Module):
         self.T = T
         self.conv_dim = enc_dim
         self.dec_init_dim = dec_init_dim
-        
+
+        # By default
+        self.is_generic = False
+
         if self.dec == 'CNN' and self.w == 1:
             if self.n == 36:
-                k0,k1,k2=3,2,2
-                s0,s1,s2=3,2,2
-                p0,p1,p2=0,0,0
-                s_d=(int(self.n/(k0*k1*k2)))
+                k0, k1, k2 = 3, 2, 2
+                s0, s1, s2 = 3, 2, 2
+                p0, p1, p2 = 0, 0, 0
+                s_d = int(self.n / (k0 * k1 * k2))
+
+                self.k0, self.k1, self.k2 = k0, k1, k2
+                self.s0, self.s1, self.s2 = s0, s1, s2
+                self.p0, self.p1, self.p2 = p0, p1, p2
+                self.cd = [32, s_d]
+
+                self.deconv_fc_mu = nn.Sequential(
+                    LinearUnit(self.dec_init_dim, self.conv_dim * 2),
+                    LinearUnit(self.conv_dim * 2, self.cd[0] * self.cd[1]),
+                )
+                self.deconv_mu = nn.Sequential(
+                    ConvUnitTranspose1d(32, 16, kernel=self.k2, stride=self.s2, padding=self.p2),
+                    ConvUnitTranspose1d(16, 8, kernel=self.k1, stride=self.s1, padding=self.p1),
+                    ConvUnitTranspose1d(8, 1, kernel=self.k0, stride=self.s0, padding=self.p0, nonlinearity=nn.Tanh()),
+                )
+
+                self.deconv_fc_logsigma = nn.Sequential(
+                    LinearUnit(self.dec_init_dim, self.conv_dim * 2),
+                    LinearUnit(self.conv_dim * 2, self.cd[0] * self.cd[1]),
+                )
+                self.deconv_logsigma = nn.Sequential(
+                    ConvUnitTranspose1d(32, 16, kernel=self.k2, stride=self.s2, padding=self.p2),
+                    ConvUnitTranspose1d(16, 8, kernel=self.k1, stride=self.s1, padding=self.p1),
+                    ConvUnitTranspose1d(8, 1, kernel=self.k0, stride=self.s0, padding=self.p0, nonlinearity=nn.Tanh()),
+                )
+
             elif self.n == 38:
-                k0,k1,k2=2,2,2
-                s0,s1,s2=2,2,2
-                p0,p1,p2=1,0,0
-                s_d=(int((self.n+s0*p0)/(k0*k1*k2)))
+                k0, k1, k2 = 2, 2, 2
+                s0, s1, s2 = 2, 2, 2
+                p0, p1, p2 = 1, 0, 0
+                s_d = int((self.n + s0 * p0) / (k0 * k1 * k2))
+
+                self.k0, self.k1, self.k2 = k0, k1, k2
+                self.s0, self.s1, self.s2 = s0, s1, s2
+                self.p0, self.p1, self.p2 = p0, p1, p2
+                self.cd = [32, s_d]
+
+                self.deconv_fc_mu = nn.Sequential(
+                    LinearUnit(self.dec_init_dim, self.conv_dim * 2),
+                    LinearUnit(self.conv_dim * 2, self.cd[0] * self.cd[1]),
+                )
+                self.deconv_mu = nn.Sequential(
+                    ConvUnitTranspose1d(32, 16, kernel=self.k2, stride=self.s2, padding=self.p2),
+                    ConvUnitTranspose1d(16, 8, kernel=self.k1, stride=self.s1, padding=self.p1),
+                    ConvUnitTranspose1d(8, 1, kernel=self.k0, stride=self.s0, padding=self.p0, nonlinearity=nn.Tanh()),
+                )
+
+                self.deconv_fc_logsigma = nn.Sequential(
+                    LinearUnit(self.dec_init_dim, self.conv_dim * 2),
+                    LinearUnit(self.conv_dim * 2, self.cd[0] * self.cd[1]),
+                )
+                self.deconv_logsigma = nn.Sequential(
+                    ConvUnitTranspose1d(32, 16, kernel=self.k2, stride=self.s2, padding=self.p2),
+                    ConvUnitTranspose1d(16, 8, kernel=self.k1, stride=self.s1, padding=self.p1),
+                    ConvUnitTranspose1d(8, 1, kernel=self.k0, stride=self.s0, padding=self.p0, nonlinearity=nn.Tanh()),
+                )
+
             else:
-                raise ValueError('Invalid kpi numbers: please choose from the set [36,38]')
-            self.k0,self.k1,self.k2=k0,k1,k2
-            self.s0,self.s1,self.s2=s0,s1,s2
-            self.p0,self.p1,self.p2=p0,p1,p2
-            self.cd = [32,s_d]
-            self.deconv_fc_mu = nn.Sequential(
-                         LinearUnit(self.dec_init_dim, self.conv_dim*2),
-                         LinearUnit(self.conv_dim*2, self.cd[0]*self.cd[1]))
-            self.deconv_mu = nn.Sequential(
-                      ConvUnitTranspose1d(32, 16, kernel=self.k2, 
-                                                  stride=self.s2, 
-                                                  padding=self.p2),  
-                      ConvUnitTranspose1d(16, 8, kernel=self.k1, 
-                                                 stride=self.s1, 
-                                                 padding=self.p1), 
-                      ConvUnitTranspose1d(8, 1, kernel=self.k0, 
-                                               stride=self.s0, 
-                                               padding=self.p0, 
-                                               nonlinearity=nn.Tanh()) 
-                      ) 
-            self.deconv_fc_logsigma = nn.Sequential(
-                         LinearUnit(self.dec_init_dim, self.conv_dim*2),
-                         LinearUnit(self.conv_dim*2, self.cd[0]*self.cd[1]))
-            self.deconv_logsigma = nn.Sequential(
-                      ConvUnitTranspose1d(32, 16, kernel=self.k2,                               
-                                                  stride=self.s2,                             
-                                                  padding=self.p2),  
-                      ConvUnitTranspose1d(16, 8, kernel=self.k1,                               
-                                                 stride=self.s1,              
-                                                 padding=self.p1), 
-                      ConvUnitTranspose1d(8, 1, kernel=self.k0,                              
-                                               stride=self.s0,    
-                                               padding=self.p0,                           
-                                               nonlinearity=nn.Tanh()) 
-                      )
+                # Generic decoder for any n != 36/38 (e.g., NetMob n=96)
+                self.is_generic = True
+
+                # mu head
+                self.fc_mu = nn.Sequential(
+                    nn.Linear(self.dec_init_dim, self.conv_dim * 2),
+                    nn.ReLU(),
+                    nn.Linear(self.conv_dim * 2, self.n * self.w),
+                )
+                # logsigma head
+                self.fc_logsigma = nn.Sequential(
+                    nn.Linear(self.dec_init_dim, self.conv_dim * 2),
+                    nn.ReLU(),
+                    nn.Linear(self.conv_dim * 2, self.n * self.w),
+                )
         else:
             raise ValueError('Unknown decoder: {}'.format(self.dec))
 
     def dec_x_mu(self, x):
         if self.dec == 'CNN' and self.w == 1:
-            x = self.deconv_fc_mu(x)
-            x = x.view(-1, self.cd[0], self.cd[1])
-            x = self.deconv_mu(x)
-            x = x.view(-1, 1, 1, self.n, self.w)
-        else:
-            raise ValueError('Unknown decoder: {}'.format(self.dec))
-        return x
-    
- 
+            if self.is_generic:
+                # x: (B, dec_init_dim) -> (B, n*w) -> (B,1,1,n,w)
+                x = self.fc_mu(x)
+                x = x.view(-1, 1, 1, self.n, self.w)
+                return x
+            else:
+                x = self.deconv_fc_mu(x)
+                x = x.view(-1, self.cd[0], self.cd[1])
+                x = self.deconv_mu(x)
+                x = x.view(-1, 1, 1, self.n, self.w)
+                return x
+
+        raise ValueError('Unknown decoder: {}'.format(self.dec))
+
     def dec_x_logsigma(self, x):
         if self.dec == 'CNN' and self.w == 1:
-            x = self.deconv_fc_logsigma(x)
-            x = x.view(-1, self.cd[0], self.cd[1])
-            x = self.deconv_logsigma(x)
-            x = x.view(-1, 1, 1, self.n, self.w)
-        else:
-            raise ValueError('Unknown  decoder: {}'.format(self.dec))
-        return x
+            if self.is_generic:
+                x = self.fc_logsigma(x)
+                x = x.view(-1, 1, 1, self.n, self.w)
+                return x
+            else:
+                x = self.deconv_fc_logsigma(x)
+                x = x.view(-1, self.cd[0], self.cd[1])
+                x = self.deconv_logsigma(x)
+                x = x.view(-1, 1, 1, self.n, self.w)
+                return x
+
+        raise ValueError('Unknown decoder: {}'.format(self.dec))
 
     def forward(self, x):
-        x_mu =  self.dec_x_mu(x)
+        x_mu = self.dec_x_mu(x)
         x_logsigma = self.dec_x_logsigma(x)
         return x_mu, x_logsigma
+
 
 class LossFunctions:
     eps = 1e-8
@@ -539,22 +620,43 @@ class SGmVRNN(nn.Module):
                     nn.init.constant_(m.bias, 0)
 
 
-    def loss_fn(self, x, z, z_mean_posterior, z_logvar_posterior, z_mean_prior, z_logvar_prior, 
-                      x_mu, x_logsigma, cate, logits, posterior_probs):
+    def loss_fn(self, x, z, z_mean_posterior, z_logvar_posterior, z_mean_prior, z_logvar_prior,
+            x_mu, x_logsigma, cate, logits, posterior_probs):
+
         batch_size = x.size(0)
-        
-        loglikelihood = self.losses.log_normal(x.float(), x_mu.float(), torch.pow(torch.exp(x_logsigma.float()), 2))
-        
+
+        # ---- Stabilisation numerique ----
+        # Evite overflow dans exp() -> inf -> nan
+        x_logsigma = torch.clamp(x_logsigma, min=-10.0, max=10.0)
+
+        # Evite overflow/underflow dans variances de z
+        z_logvar_posterior = torch.clamp(z_logvar_posterior, min=-10.0, max=10.0)
+        z_logvar_prior = torch.clamp(z_logvar_prior, min=-10.0, max=10.0)
+
+        # Log-likelihood
+        var_x = torch.pow(torch.exp(x_logsigma.float()), 2)
+        loglikelihood = self.losses.log_normal(x.float(), x_mu.float(), var_x)
+
+        # KL(z)
         z_var_posterior = torch.exp(z_logvar_posterior)
         z_var_prior = torch.exp(z_logvar_prior)
-        kld_z = 0.5 * torch.sum(z_logvar_prior - z_logvar_posterior
-                        + ((z_var_posterior + torch.pow(z_mean_posterior - z_mean_prior, 2)) / z_var_prior)
-                        -1)
 
-        kld_cate = -self.losses.entropy(logits, posterior_probs) - np.log(1/self.cate_dim)
+        kld_z = 0.5 * torch.sum(
+            z_logvar_prior - z_logvar_posterior
+            + ((z_var_posterior + torch.pow(z_mean_posterior - z_mean_prior, 2)) / (z_var_prior + 1e-8))
+            - 1
+        )
 
-        return (-loglikelihood + kld_cate + kld_z)/batch_size, loglikelihood/batch_size, kld_z/batch_size, kld_cate/batch_size
- 
+        # KL(categorical)
+        kld_cate = -self.losses.entropy(logits, posterior_probs) - np.log(1 / self.cate_dim)
+
+        return (
+            (-loglikelihood + kld_cate + kld_z) / batch_size,
+            loglikelihood / batch_size,
+            kld_z / batch_size,
+            kld_cate / batch_size
+        )
+
     def forward(self, x):
         # Conduct Inference
         z_post, z_mean_post, z_logvar_post, hidden_state, cate_post, logits, post_probs = self.inference(x, self.temperature)

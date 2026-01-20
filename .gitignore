@@ -1,0 +1,41 @@
+# ---- Python / venv ----
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+*.ipynb
+
+# ---- OS / IDE ----
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ---- Big datasets / archives ----
+data_preprocess/Dataset NetMob23/
+data_preprocess/SMD_concated/
+*.rar
+*.zip
+*.7z
+*.tar
+*.tar.gz
+
+# ---- Preprocessed data ----
+data_preprocess/data_processed/
+**/*.seq
+
+# ---- Training artifacts ----
+SGmVRNN/model/
+SGmVRNN/log_trainer/
+SGmVRNN/log_tester/
+
+# optional: keep only scores if you want
+!SGmVRNN/log_tester/**/.*  # keep folder structure if empty
+
+# ---- Large binaries ----
+*.so
+*.pt
+*.pth
+

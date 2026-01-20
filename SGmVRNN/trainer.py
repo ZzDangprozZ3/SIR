@@ -47,7 +47,7 @@ class Trainer(object):
     def load_checkpoint(self, start_ep):
         try:
             print ("Loading Chechpoint from ' {} '".format(self.checkpoints+'_epochs{}.pth'.format(start_ep)))
-            checkpoint = torch.load(self.checkpoints+'_epochs{}.pth'.format(start_ep))
+            checkpoint = torch.load(self.checkpoints+'_epochs{}.pth'.format(start_ep), map_location=self.device)
             self.start_epoch = checkpoint['epoch']
             self.model.temperature = checkpoint['temperature']
             self.model.load_state_dict(checkpoint['state_dict'])
@@ -68,17 +68,33 @@ class Trainer(object):
             print ("Running Epoch : {}".format(epoch+1))
             for i, dataitem in tqdm(enumerate(self.trainloader,1)):
                 _,_,data = dataitem
-                data = data.to(self.device)
+                data = data.to(self.device).float()
+
+    # --------- STABILISATION NetMob (anti-NaN) ----------
+                data = torch.log1p(data)
+                m = data.mean()
+                s = data.std()
+                data = (data - m) / (s + 1e-6)
+                data = torch.clamp(data, -10.0, 10.0)
+    # --------- FIN STABILISATION ----------
+
                 self.optimizer.zero_grad()
+
                 z_mean_post, z_logvar_post, z, z_mean_prior, z_logvar_prior, x_mu, x_logsigma, pi, logits, posterior_probs = self.model(data)
-                loss, llh, kld_z, kld_pi = self.model.loss_fn(data, z, z_mean_post, z_logvar_post, z_mean_prior, z_logvar_prior,
-                                                              x_mu, x_logsigma, pi, logits, posterior_probs)
+
+                loss, llh, kld_z, kld_pi = self.model.loss_fn(
+                    data, z, z_mean_post, z_logvar_post, z_mean_prior, z_logvar_prior,
+                    x_mu, x_logsigma, pi, logits, posterior_probs
+                )
+
                 loss.backward()
                 self.optimizer.step()
+
                 losses.append(loss.item())
                 llhs.append(llh.item())
                 kld_zs.append(kld_z.item())
                 kld_pis.append(kld_pi.item())
+
             meanloss = np.mean(losses)
             meanllh = np.mean(llhs)
             meanz = np.mean(kld_zs)
