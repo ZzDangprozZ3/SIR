@@ -30,6 +30,11 @@ CausalRCA/data_collected/
 CausalRCA/figures/
 CausalRCA/pa_result/
 CausalRCA/venv/
+CausalRCA/.ipynb_checkpoints/
+CausalRCA/data_collected/
+CausalRCA/figures/
+CausalRCA/pa_result/
+CausalRCA/venv/
 
 # OS files
 .DS_Store
