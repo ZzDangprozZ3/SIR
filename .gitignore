@@ -48,3 +48,11 @@ Thumbs.db
 /Facebook/
 /Netflix/
 /NetMob23/
+# SGmVRNN generated files
+SGmVRNN/log_trainer/
+SGmVRNN/model/
+SGmVRNN/code/log_trainer/
+SGmVRNN/code/log_tester/
+SGmVRNN/code/model/
+SGmVRNN/**/__pycache__/
+*.pyc
