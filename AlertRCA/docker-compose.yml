@@ -8,8 +8,8 @@ services:
     image: alert-rca-app
     volumes:
       - ./:/app  # mount toàn bộ thư mục project vào /app trong container
-      - ../../CleUSB/Facebook/:/data/facebook  # mount thư mục data vào /data trong container
-      - ../../CleUSB/Netflix/:/data/netflix  # mount thư mục data vào /data trong container
+      - ../NetMob23/Facebook/:/data/facebook  # mount thư mục data vào /data trong container
+      - ../NetMob23/Netflix/:/data/netflix  # mount thư mục data vào /data trong container
     working_dir: /app
     command: sh -c "python traitementdata.py && python -m AlertRCA --dataset A_NetMob --modeldir A_NetMob"
    # chạy file chính
