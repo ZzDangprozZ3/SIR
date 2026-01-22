@@ -56,3 +56,23 @@ SGmVRNN/code/log_tester/
 SGmVRNN/code/model/
 SGmVRNN/**/__pycache__/
 *.pyc
+
+# --- Python / venv ---
+venv/
+.venv/
+__pycache__/
+*.pyc
+
+# --- Datasets / generated data (too large) ---
+SMD/
+data_preprocess/Dataset\ NetMob23/
+data_preprocess/SMD_concated/
+data_preprocess/data_processed/
+**/*.seq
+
+# --- Training outputs ---
+SGmVRNN/log_trainer/
+SGmVRNN/log_tester/
+SGmVRNN/model/
+results/
+
