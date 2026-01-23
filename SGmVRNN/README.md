@@ -1,88 +1,157 @@
-# SGmVRNN
-SGmVRNN is a switching Gaussian mixture variational recurrent neural network based anomaly detection for diverse CDN websites.
+# SGmVRNN – Adaptation au dataset NetMob23 (Projet SIR)
 
-## Getting Started
-### Install dependencies (with python 3.5 or 3.6)
-#### Python virtual environment is suggested
+Ce dépôt contient mon travail réalisé dans le cadre du **projet SIR** :  
+➡️ **Intégration + adaptation du framework SGmVRNN** (*Stochastic Gumbel Variational RNN*) pour la **détection d’anomalies sur séries temporelles**, appliquée au dataset **NetMob23**.
 
-    virtualenv -p <Your python path> venv
-    source venv/bin/activate
-    pip install -r requirements.txt
-    
-### Data Preprocessing
-The data preprocessing is split into two steps: including data normalisation and data slicing by sliding window.
-##### Note that for 'data_preprocess_1st.py' and 'data_preprocess_2nd.py', please refer to the folder 'data_preprocess'.
+L’objectif principal demandé était : **faire tourner le framework sur NetMob23 et produire des résultats (scores d’anomalie)**.
 
-    cd data_preprocess
-#### 1st step:
-##### For SMD
-    python data_preprocess_1st.py --train_path SMD/train --test_path SMD/test --label_path SMD/test_label --output_path SMD_concated --dataset SMD
-#### 2nd step:
-##### For SMD training set
-    python data_preprocess_2nd.py --raw_data_file SMD_concated/machine_kpi_ts_data_train.csv --label_file SMD_concated/machine_kpi_ts_label_train.csv --data_path data_processed/smd-train &
-    
-##### For SMD testing set
-    python data_preprocess_2nd.py --raw_data_file SMD_concated/machine-1-1_data_test.csv --label_file SMD_concated/machine-1-1_label_test.csv --data_path data_processed/machine-1-1 &
-    
-##### Note that:
-The processed training set for SMD can be found in data_preprocess/data_processed/smd-train;
-The processed training set for all of the machines can be found in data_preprocess/data_processed, e.g., data_preprocess/data_processed/machine-1-1, etc.
+---
 
-### Running SGmVRNN
+## 1) Contexte et objectif
 
-    cd SGmVRNN
+### Framework
+**SGmVRNN** est un modèle deep learning non supervisé basé sur :
+- un modèle séquentiel de type **RNN/LSTM**
+- un latent continu **z**
+- un latent catégoriel **c** estimé via **Gumbel-Softmax**
+- une génération probabiliste qui permet de calculer un score basé sur la **log-vraisemblance**
 
-### Training
-##### For SMD
-    python trainer.py --dataset_path ../data_preprocess/data_processed/smd-train --gpu_id 1 --log_path log_trainer/smd --checkpoints_path model/smd --n 38
- 
-### Testing
-##### For SMD 
-###### e.g., for machine-1-1
-    nohup python tester.py --dataset_path ../data_preprocess/data_processed/machine-1-1 --gpu_id 1 --log_path log_tester/machine-1-1 --checkpoints_path model/smd --n 38 2>&1 &
- 
-### Evaluation via POT
-##### For SMD
-###### e.g., for machine-1-1
-    nohup python evaluate_pot.py --llh_path log_tester/machine-1-1 --log_path log_evaluator_pot/machine-1-1 --n 38 2>&1 &
+Le framework est initialement conçu pour le dataset **SMD** (Server Machine Dataset), avec un format très strict.
 
-##### The Final Results via POT
-The final results including F1-score, Precision, Recall, etc. are in "SGmVRNN/log_evaluator_pot". <br>
+### Objectif de mon travail
+Adapter SGmVRNN pour fonctionner sur **NetMob23** :
+- conversion des données NetMob23 vers le format `.seq` attendu par SGmVRNN
+- adaptation du modèle pour supporter `n=96` (NetMob)
+- entraînement + génération de checkpoints
+- test et génération de **scores** (loglikelihood) exploitable
 
-## Datasets
-### Basic Statistics
-Statistics | KPIs of CDN  | KPIs of SMD 
---- | --- | --- 
-Dimensions | 31 * 36 | 28 * 38
-Granularity (sec) | 60 | 60 
-Training set size | 1,227,249 | 708,405 
-Testing set size | 1,227,250 | 708,420 
-Anomaly Ratio (%) | 3.68 | 4.16 
+---
 
-### CDN Dataset Information
+## 2) Dataset NetMob23
 
-#### CDN Data Format
-There are 3 comma separated CSV files of each website,including training, testing set as well as the corresponding ground-truth file of testing set. <br>
-The KPIs data file has the following format: <br>
-* The columns are the KPIs values, and each column corresponds to a KPI <br>
+NetMob23 contient des fichiers texte de trafic réseau mobile structurés par :
+- **application** (Facebook / Netflix / Spotify)
+- **tuile géographique** (Tile ID)
+- valeurs temporelles (trafic)
 
- KPI_1 | KPI_2 | ... | KPI_n
- --- | --- | --- | ---
- 0.5 | 0.6 | ... | 0.7
- 0.3 | 0.4 | ... | 0.5
- ... | ... | ... | ... 
- 0.9 | 0.8 | ... | 0.7
+### Format (exemple)
+Chaque ligne du fichier :
+- commence par une date `YYYYMMDD`
+- suivie par **96 valeurs** (pas temporel de 15 minutes → 24h)
 
-The ground-truth file has the following format: <br>
-* The column is the label, 0 for normal and 1 for abnormal <br>
+Exemple :
+20190430 v1 v2 v3 ... v96
 
- |label|  
- |---| 
- | 0 |
- | 1 |
- | ... |
- | 0 |
 
-### Public Dataset 
+---
 
-Please refer to https://github.com/NetManAIOps/OmniAnomaly for public SMD dataset.
+## 3) Difficultés rencontrées
+
+### (1) Incompatibilité du nombre de KPIs `n`
+Le modèle original SGmVRNN ne supporte que :
+- `n=36` ou `n=38` (hardcodé dans le CNN encoder/decoder)
+
+Or NetMob nécessite :
+- `n=96`
+
+✅ Solution :
+- modification du `model.py` pour permettre `n=96`  
+(EncX et DecX adaptés)
+
+---
+
+### (2) Nom des fichiers `.seq` non compatible
+Le loader `KpiReader` lit les fichiers sous la forme :
+- `1.seq`, `2.seq`, `3.seq`, ...
+
+Mais après conversion NetMob :
+- noms du type `100023.seq`, `453162.seq`, etc.
+
+✅ Solution :
+- création d’une version renumérotée du dataset via **liens symboliques** :
+`netmob_nf_dl_small_renum/train/1.seq → original/67.seq`
+
+---
+
+### (3) Instabilité numérique (NaN)
+Les données NetMob contiennent des valeurs pouvant dépasser 60k, ce qui provoquait :
+- explosion de gradients
+- `NaN` dès le premier epoch
+- sorties du modèle non finies (`x_mu`, `x_logsigma`, `logits`, etc.)
+
+✅ Solution :
+- normalisation simple dans `trainer.py` :
+  - `log1p`
+  - standardisation (mean/std)
+  - clamp des valeurs
+
+---
+
+### (4) Présence éventuelle de NaN dans certaines applications
+Lors de l’analyse brute :
+- certains fichiers (notamment Spotify) contenaient des `nan` en fin de ligne.
+
+✅ Choix :
+- priorisation du travail sur **Netflix** et **Facebook** (datasets plus stables)
+
+---
+
+## 4) Installation
+
+### 1) Créer un environnement virtuel
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+### 2) Installer les dépendances
+```bash
+pip install -r requirements.txt
+```
+## 5) Prétraitement : NetMob23 → .seq
+
+Le framework SGmVRNN attend un dataset sous forme de fichiers `.seq` PyTorch, contenant :
+
+- `value` : tenseur `[20, 1, 96, 1]`
+- `label` : tenseur `[20, 1, 1]` (étiquette au dernier timestamp)
+- `ts` : tenseur `[20, 1, 1]` (timestamp)
+
+Conversion via script :
+
+```bash
+python scripts/netmob_to_seq.py \
+  --input_path "data_preprocess/Dataset NetMob23/Netflix/DL" \
+  --output_path "data_preprocess/data_processed/netmob_nf_dl/train" \
+  --app netflix
+```
+## 6) Entraînement
+
+Exemple d’entraînement sur NetMob (small renuméroté) :
+```bash
+python trainer.py \
+  --dataset_path ../data_preprocess/data_processed/netmob_nf_dl_small_renum/train \
+  --gpu_id 0 \
+  --log_path log_trainer/netmob_nf_dl_small \
+  --checkpoints_path model/netmob_nf_dl_small \
+  --epochs 3 \
+  --batch_size 128 \
+  --n 96
+```
+## 7) Résultats
+Les résultats générés sont stockés ici :
+
+📌 **Fichier score final :**
+
+```txt
+results/netmob_nf_dl_small/netmob_nf_dl_small_scores.txt
+```
+Format :
+```txt
+timestamp, score_loglikelihood, Normaly/Anomaly
+```
+Exemple :
+```txt
+42,-158.22906494140625,Normaly
+54,-361.60223388671875,Normaly
+```
+👉 Le score correspond à la log-vraisemblance du dernier timestamp
+(plus la valeur est faible/négative, plus cela indique une anomalie potentielle selon le modèle).
