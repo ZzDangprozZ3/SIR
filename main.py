@@ -28,23 +28,35 @@ def image_exists(image_name):
     except subprocess.CalledProcessError:
         return False
 
-
 def run_framework(framework_name, force_rebuild=False):
     root_dir = os.getcwd()
     framework_dir = os.path.join(root_dir, framework_name)
     data_dir = os.path.join(root_dir, DATA_DIR_NAME)
 
+    fw_lower = framework_name.lower()
 
     if not os.path.isdir(framework_dir):
         print(f"ERREUR: Le dossier du framework '{framework_name}' n'existe pas.")
         return
 
     if not check_data_presence(data_dir):
-        return # On arrête tout si pas de data
+        return 
 
-    image_name = f"{framework_name.lower()}_img"
+    if fw_lower == "alertrca":
+        print(f"\n>>> Lancement de AlertRCA via Docker-Compose...")
+        subprocess.call("docker-compose run --rm --build app", shell=True, cwd=framework_dir)
+        print(f"\nFIN {framework_name.upper()}")
+        return
+
+    if fw_lower == "traceanomaly":
+        print(f"\n>>> Lancement de TraceAnomaly via script Python...")
+        subprocess.call(f"{sys.executable} main.py", shell=True, cwd=framework_dir)
+        print(f"\nFIN {framework_name.upper()}")
+        return
+
+    image_name = f"{fw_lower}_img"
     
-    # Build
+
     should_build = force_rebuild or not image_exists(image_name)
     if should_build:
         print(f"\n 1/3 Construction de l'image Docker ({image_name})...")
