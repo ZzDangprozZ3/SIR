@@ -9,7 +9,6 @@ Le projet repose sur une structure de fichiers stricte pour assurer le bon fonct
 ### Structure requise
 
 Pour assurer le bon fonctionnement du code, vous devez organiser vos fichiers selon l'arborescence suivante à la racine du projet :
-### Structure des données
 
 ```text
 .
