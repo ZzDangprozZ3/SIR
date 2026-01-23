@@ -8,7 +8,18 @@ Le projet repose sur une structure de fichiers stricte pour assurer le bon fonct
 
 ### Structure requise
 
-À la racine du projet, vous devez placer le dossier de données **NetMob23** contenant les dossiers des différentes applications et à la racine de celui-ci le fichier `Lyon.geojson` et les fichiers de résultats de détections d'anomalies.
+Pour assurer le bon fonctionnement du code, vous devez organiser vos fichiers selon l'arborescence suivante à la racine du projet :
+### Structure des données
+
+```text
+.
+└── NetMob23/
+    ├── Netflix/
+    │   └── data_netflix.txt
+    ├── Facebook/
+    │   └── data_facebook.txt
+    ├── Lyon.geojson
+    └── resultats_anomalies.csv
 
 ## 2. Exécution
 
