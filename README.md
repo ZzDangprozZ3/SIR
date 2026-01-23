@@ -66,16 +66,16 @@ TraceAnomaly est configurable via le fichier
 
 ##### Workflow
 
-### 1. Prétraitement des données
+###### 1. Prétraitement des données
 - Exécution du script `traitementdata.py`
 - Transformation des données NetMob vers le **format d’entrée attendu par le framework**
 
-### 2. Entraînement et scoring
+###### 2. Entraînement et scoring
 - Lancement de l’environnement via **Docker**
 - Entraînement du modèle
 - Calcul d’un **score de log-vraisemblance** pour chaque timestamp
 
-### 3. Détection d’anomalies
+###### 3. Détection d’anomalies
 - Analyse des scores par le module `detection_anomaly.py`
 
 **Sortie** :  
