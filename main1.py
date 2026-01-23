@@ -33,6 +33,8 @@ def run_framework(framework_name, force_rebuild=False):
     framework_dir = os.path.join(root_dir, framework_name)
     data_dir = os.path.join(root_dir, DATA_DIR_NAME)
 
+    fw_lower = framework_name.lower()
+
     if not os.path.isdir(framework_dir):
         print(f"ERREUR : Le dossier '{framework_name}' n'existe pas.")
         return
@@ -42,17 +44,16 @@ def run_framework(framework_name, force_rebuild=False):
         return
 
     # --- LOGIQUE POUR VOS FRAMEWORKS (Exécution directe) ---
-    if framework_name == "AlertRCA":
-        print(f"\n>>> [VOTRE MODE] Lancement direct de AlertRCA via Docker-Compose...")
+    if fw_lower == "alertrca": # Comparaison en minuscules
+        print(f"\n>>> [VOTRE MODE] Lancement direct via Docker-Compose...")
         subprocess.call("docker-compose run --rm --build app", shell=True, cwd=framework_dir)
-        print(f"\nFIN {framework_name.upper()}")
-        return # S'arrête ici, n'exécute pas la logique de l'ami
+        return
 
-    if framework_name == "TraceAnomaly":
-        print(f"\n>>> [VOTRE MODE] Lancement direct du script Python pour TraceAnomaly...")
+    if fw_lower == "traceanomaly": # Comparaison en minuscules
+        print(f"\n>>> [VOTRE MODE] Lancement direct du script Python...")
+        # Utilise sys.executable pour garantir d'utiliser le bon Python
         subprocess.call(f"{sys.executable} main.py", shell=True, cwd=framework_dir)
-        print(f"\nFIN {framework_name.upper()}")
-        return # S'arrête ici
+        return
 
     # --- LOGIQUE POUR L'AMI (Docker Build & Run classique) ---
     print(f"\n>>> [MODE AMI] Préparation de l'image Docker pour {framework_name}...")

@@ -80,3 +80,4 @@ results/
 # Allow SGmVRNN small example results
 !SGmVRNN/results/
 !SGmVRNN/results/**
+merged_flows
