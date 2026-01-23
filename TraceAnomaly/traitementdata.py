@@ -1,8 +1,10 @@
 import os
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 input_dirs = [
-    r"C:\Users\USER\OneDrive\Máy tính\3TC\SIR\CleUSB\Dataset NetMob23\Facebook1\DL",
-    r"C:\Users\USER\OneDrive\Máy tính\3TC\SIR\CleUSB\Dataset NetMob23\Netflix1\Netflix\DL"
+    os.path.join(BASE_DIR, "..", "NetMob23", "Facebook"),
+    os.path.join(BASE_DIR, "..", "NetMob23", "Netflix")
 ]
 output_file = os.path.join(os.getcwd(), "merged_flows")
 
