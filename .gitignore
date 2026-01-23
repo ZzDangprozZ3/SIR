@@ -76,3 +76,7 @@ SGmVRNN/log_tester/
 SGmVRNN/model/
 results/
 
+
+# Allow SGmVRNN small example results
+!SGmVRNN/results/
+!SGmVRNN/results/**
