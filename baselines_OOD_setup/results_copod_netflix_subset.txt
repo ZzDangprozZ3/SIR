@@ -1,0 +1,27 @@
+NETMOB23 ANOMALY DETECTION RESULTS
+==================================================
+
+Configuration:
+  Application : netflix
+  Dataset     : subset
+  Method      : copod
+  Date        : 2026-01-09 00:18:47
+
+Score Statistics:
+  Min     : 72.3518
+  Max     : 437.0557
+  Mean    : 128.7449
+  Median  : 111.5795
+  Std     : 48.6760
+
+Top 10 Anomalies:
+   1. Index   7740 - Score: 437.0557
+   2. Index  12919 - Score: 428.3984
+   3. Index  12453 - Score: 428.0646
+   4. Index  13086 - Score: 421.8826
+   5. Index  12554 - Score: 420.1970
+   6. Index  10629 - Score: 413.6557
+   7. Index   7056 - Score: 413.2065
+   8. Index  12722 - Score: 411.6872
+   9. Index   7322 - Score: 405.6834
+  10. Index   7561 - Score: 401.1470
