@@ -15,7 +15,7 @@
 
 Le framework est initialement conçu pour le dataset **SMD** (Server Machine Dataset), avec un format très strict.
 
-### Objectif de mon travail
+### Objectif 
 Adapter SGmVRNN pour fonctionner sur **NetMob23** :
 - conversion des données NetMob23 vers le format `.seq` attendu par SGmVRNN
 - adaptation du modèle pour supporter `n=96` (NetMob)
