@@ -42,7 +42,7 @@ Reconstruction forcée : Si vous avez modifié le code ou le Dockerfile, forcez 
 
 Framework de détection d'anomalie supervisé. Nécessite l'ajout de label. Pour cela utilisez le fichier anomalie.txt dans le dossier AWSCTD.
 
-Génère un fichier ANOMALY_REPORT.txt dans le dossier AWSCTD que l'on peut utiliser pour les frameworks d'analyse cause racine. 
+Génère un fichier ANOMALY_REPORT.txt dans le dossier AWSCTD que l'on peut utiliser pour les frameworks d'analyse cause racine.
 Le format est : Date: 20190501 | Tile: Facebook_DL_Tile_100006.txt | Confiance: 0.9267
 
 ##### Configuration d'AWSCTD (AWSCTD/config.ini)
@@ -57,30 +57,35 @@ Choix : FCN, LSTM-FCN, GRU-FCN, AWSCTD-CNN-S, AWSCTD-CNN-LSTM, AWSCTD-CNN-GRU, A
 **nSequenceLength** : Longueur des séquences temporelles (défaut: 96)
 
 #### TraceAnomaly
+
 Framework de **détection d’anomalies basé sur des traces réseau**, adapté au dataset **NetMob**.
 
-##### Configuration de TraceAnomaly 
+##### Configuration de TraceAnomaly
 
 TraceAnomaly est configurable via le fichier  
 `TraceAnomaly/traceanomaly/main.py`
 
-## Workflow
+##### Workflow
 
-### 1. Prétraitement des données
+###### 1. Prétraitement des données
+
 - Exécution du script `traitementdata.py`
 - Transformation des données NetMob vers le **format d’entrée attendu par le framework**
 
-### 2. Entraînement et scoring
+###### 2. Entraînement et scoring
+
 - Lancement de l’environnement via **Docker**
 - Entraînement du modèle
 - Calcul d’un **score de log-vraisemblance** pour chaque timestamp
 
-### 3. Détection d’anomalies
+###### 3. Détection d’anomalies
+
 - Analyse des scores par le module `detection_anomaly.py`
 
 **Sortie** :  
-  - `TraceAnomaly/webankdata/rnvp_result` : scores d’anomalies par timestamp
-  - `TraceAnomaly/faults_TraceAnomaly.csv` : anomalies détectées
+
+- `TraceAnomaly/webankdata/rnvp_result` : scores d’anomalies par timestamp
+- `TraceAnomaly/faults_TraceAnomaly.csv` : anomalies détectées
 Le format du fichier est le suivant : id,score | Netflix_45541_20190508,-4.5588937
 
 ### B. Frameworks de détection d'anomalies / RCA
@@ -93,7 +98,7 @@ Framework utilisant des graphes causaux (DAG-GNN) pour identifier l'origine géo
 
 **Sortie** : Rapports JSON par anomalie et matrice de causalité (dans le dossier CausalRCA).
 
-#### Configuration (CausalRCA/config.ini)
+##### Configuration (CausalRCA/config.ini)
 
 CausalRCA peut se configurer avec son fichier **config.ini** dans le dossier respectif.
 
