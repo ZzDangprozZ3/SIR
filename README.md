@@ -1,70 +1,34 @@
 # Projet SIR: Adaptation des Frameworks d’Anomalies au Dataset NetMob23
 
-Ce dépôt contient :
-
-- Le convertisseur du dataset NetMob23
-- Les adaptations des frameworks étudiés
-- Les Dockerfiles associés
-- La documentation finale
-
-## Membres du groupe
-
 ## Organisation
 
-avant d'implémenter un convertisseur entre netmob23 et AWSCD, il faut commprendre comment les donné vont être transformer
-Il faut, pour chaque framework avoir une validation.
-la solution peu aussi être "peer reviewed"
+Ce dossier contient l'adaptation des 7 frameworks;
+Chaque framework est contenue dans le dossier avec son nom repectif.
+A la racine du projet doit etre ajouté un dossier **NetMob23** contenant les dossier des différentes applications et à la racine de celui-ci le fichier Lyon.geojson et les fichier de résultats de détéctions d'anomalies.
 
-### AWSCTD
+## Execution
 
-#### Fonctionnement
+Afin d'éxecuter un Framework il suffit de rester dans le dossier racine et d'éxecuter : **python main.py *nom du framework***
 
-Ce projet est une adaptation du framework de détection d'intrusions **AWSCTD** (initialement conçu pour les appels système Windows) appliqué à l'analyse de trafic mobile spatio-temporel (**NetMob23**).
+## Les différents frameworks
 
-Il utilise une architecture Dockerisée pour garantir la reproductibilité et l'indépendance de l'environnement.
+### Frameworks de detection d'anomalies
 
-#### Execution
+#### AWSCTD
 
-##### Installation & Prérequis
+Framework de détection d'anomalie supérvisé.
+Nécessite l'ajout de label. Pour cela utilisez le fichier **anomalie.txt** dans le donssier AWSCTD
 
-Docker Desktop installé et lancé
-Python 3.10+ (pour lancer l'orchestrateur main.py)
+génère un fichier **ANOMALIE_REPORT.txt** dans le dossier *AWSCTD* que l'on peut utiliser pour les frameworks d'analyse cause racine.
+le format est : Date: 20190501 | Tile: Facebook_DL_Tile_100006.txt | Confiance: 0.9267
 
-##### Prérequis
+##### Configuration d'AWSCTD
 
-Créez un dossier NetMob23 à la racine SIR/
-Déposez vos fichiers de trafic (.txt) à l'intérieur
-
-##### Configuration
-
-Tout le paramétrage se fait dans AWSCTD/config.ini sans toucher au code
+AWSCTD peu de configurer avec son fichier **config.ini** dans le dossier repectif.
 
 **nMaxFiles** : Nombre de fichiers à traiter. Mettre None pour tout traiter.
 **sModelName** : Architecture du réseau de neurones
-Choix : AWSCTD-CNN-S (rapide), LSTM, GRU, etc.
-**nEpochsNombre** :  d'itérations d'entraînement.
-
+Choix : FCN, LSTM-FCN, GRU-FCN, AWSCTD-CNN-S, AWSCTD-CNN-LSTM, AWSCTD-CNN-GRU, AWSCTD-CNN-D
+**nEpochs** : Nombre d'itérations d'entraînement.
 **nVocabSize** : Taille du vocabulaire après discrétisation (défaut: 100)
 **nSequenceLengthLongueur** : des séquences temporelles (défaut: 96)
-
-##### Utilisation
-
-Ouvrez un terminal à la racine SIR/ et lancez :
-
-Lancement standard :
-python main.py AWSCTD
-
-Forcer la reconstruction de l'image (si changement de requirements.txt) :
-python main.py AWSCTD --rebuild
-
-##### Étapes du Pipeline Automatisé
-
-Build Docker : Crée une image isolée avec TensorFlow, Pandas, Scikit-learn.
-
-Conversion : Le script convert_netmob_awsctd.py lit les fichiers .txt de NetMob23, les normalise (Log + MinMax) et génère un CSV prêt pour le modèle.
-
-Entraînement : AWSCTD.py entraîne le modèle choisi (ex: CNN) en validation croisée (K-Fold).
-
-Détection : Le modèle génère des alertes sur les séquences anormales.
-
-Rapport : Un fichier ANOMALY_REPORT.txt est généré dans le dossier AWSCTD/.

@@ -283,9 +283,34 @@ sql = """INSERT INTO results
          VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
       """
 cur = con.cursor()
-cur.execute(sql, result)
+cur.execute("""
+    CREATE TABLE IF NOT EXISTS results (
+        File TEXT, ParamCount INTEGER, ClassCount INTEGER, Epochs INTEGER, 
+        BatchSize INTEGER, Model TEXT, Time REAL, Acc REAL, Loss REAL, 
+        TimeTrain REAL, TimeTest REAL, Comment TEXT, AccStd REAL, LossStd REAL, 
+        ExecutionTime TEXT, PredictingOneTime REAL, Acc1 REAL, Acc2 REAL, 
+        Acc3 REAL, Acc4 REAL, Acc5 REAL, Config TEXT
+    )
+""")
 con.commit()
 
+import os
+path_accloss = os.path.join(m_sWorkingDir, 'ACCLOSS')
+path_roc = os.path.join(m_sWorkingDir, 'ROC')
+path_cm = os.path.join(m_sWorkingDir, 'CM')
+
+if not os.path.exists(path_accloss):
+    os.makedirs(path_accloss)
+    print(f"Dossier créé : {path_accloss}")
+
+if not os.path.exists(path_roc):
+    os.makedirs(path_roc)
+    print(f"Dossier créé : {path_roc}")
+
+if not os.path.exists(path_cm):
+    os.makedirs(path_cm)
+    print(f"Dossier créé : {path_cm}")
+	
 AWSCTDPlotAcc.plot_acc_loss(model_history, m_sModel, m_sDataFile, bCategorical, m_sWorkingDir)
 AWSCTDPlotCM.plot_cm(cm, m_sModel, m_nClassCount, m_sDataFile, m_sWorkingDir)
 
