@@ -64,7 +64,7 @@ Framework de **détection d’anomalies basé sur des traces réseau**, adapté 
 TraceAnomaly est configurable via le fichier  
 `TraceAnomaly/traceanomaly/main.py`
 
-## Workflow
+##### Workflow
 
 ### 1. Prétraitement des données
 - Exécution du script `traitementdata.py`
