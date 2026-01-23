@@ -12,6 +12,7 @@ DATA_FILE = os.path.abspath(os.path.join(BASE_DIR, '../workflow/netmob_for_awsct
 META_FILE = os.path.abspath(os.path.join(BASE_DIR, '../workflow/netmob_metadata.csv'))
 MODEL_FILE = os.path.join(BASE_DIR, 'trained_model.keras')
 REPORT_FILE = os.path.join(BASE_DIR, 'ANOMALY_REPORT.txt')
+ALERTRCA_FILE = os.path.join(BASE_DIR, 'faults_AWSCTD.csv')
 
 # Paramètres 
 VOCAB_SIZE = 100 
@@ -42,12 +43,11 @@ def generate_report():
     print("Analyse des anomalies en cours...")
     predictions = model.predict(X, verbose=1)
     
-    # --- BLOC DE DEBUG AJOUTÉ ---
+
     print(f"\n[DEBUG STATS]")
     print(f"Min score : {predictions.min():.4f}")
     print(f"Max score : {predictions.max():.4f}")
     print(f"Moyenne   : {predictions.mean():.4f}")
-    # ----------------------------
 
     if predictions.shape[1] == 1:
         # Sortie binaire
@@ -88,7 +88,35 @@ def generate_report():
             else:
                 f.write(f"ERREUR: Index {idx} hors limites des métadonnées.\n")
 
-    print(f"Rapport généré avec succès : {REPORT_FILE}")
+    print(f"Génération du CSV compatible AlertRCA : {ALERTRCA_FILE}")
+    
+    with open(ALERTRCA_FILE, 'w') as f_csv:
+        f_csv.write("id,score\n")
+        
+        for idx in anomalies_indices:
+            if idx < len(meta):
+                row = meta.iloc[idx]
+                
+                tile_full = str(row['Tile'])
+                date_val = str(row['Date'])
+                score = scores[idx] if isinstance(scores[idx], float) else scores[idx][0]
+                
+                try:
+
+                    parts = tile_full.split('_')
+                    
+                    app_name = parts[0]
+                    
+                    tile_id = parts[-1].replace('.txt', '')
+                    
+                    formatted_id = f"{app_name}_{tile_id}_{date_val}"
+                    
+                    f_csv.write(f"{formatted_id},{score:.6f}\n")
+                    
+                except Exception as e:
+                    print(f"Erreur de formatage sur {tile_full}: {e}")
+
+    print(f"Rapports générés avec succès.")
 
 if __name__ == "__main__":
     generate_report()

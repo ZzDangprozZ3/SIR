@@ -57,6 +57,8 @@ gc.collect()
 # Lecture des nouvelles sections
 sSavedModelName = config.get('FILES', 'sSavedModel', fallback='trained_model.keras')
 sDbName = config.get('FILES', 'sDatabase', fallback='results.db')
+sAnomalyReportName = config.get('FILES', 'sAnomalyReport', fallback='ANOMALY_REPORT.txt')
+sAnomalyReportcsv = config.get('FILES', 'sAnomalyReportcsv', fallback='ANOMALY_REPORT_for_AlertRCA.txt')
 
 import math
 
@@ -370,7 +372,9 @@ try:
 
 	base_data_path = os.path.dirname(m_sDataFile)
 	AWSCTD_Detect.META_FILE = os.path.join(base_data_path, 'netmob_metadata.csv')
-	
+	AWSCTD_Detect.REPORT_FILE = os.path.join(m_sWorkingDir, sAnomalyReportName)
+	AWSCTD_Detect.ALERTRCA_FILE = os.path.join(m_sWorkingDir, sAnomalyReportcsv)
+
 	AWSCTD_Detect.generate_report()
 		
 except ImportError:
