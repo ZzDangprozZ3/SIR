@@ -18,8 +18,10 @@ Pour assurer le bon fonctionnement du code, vous devez organiser vos fichiers se
     ├── Facebook/
     │   └── data_facebook.txt
     ├── Lyon.geojson
-    └── resultats_anomalies.csv
+    ├── anomalie_pour_CausalRCA.txt
+    └── anomalie_pour_AlertRCA.csv
 ```
+
 ## 2. Exécution
 
 L'exécution est centralisée via le script **main.py** qui gère la construction des images Docker et le lancement des pipelines.
