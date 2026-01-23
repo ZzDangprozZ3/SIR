@@ -1,9 +1,6 @@
 # SGmVRNN – Adaptation au dataset NetMob23 (Projet SIR)
 
-Ce dépôt contient mon travail réalisé dans le cadre du **projet SIR** :  
-➡️ **Intégration + adaptation du framework SGmVRNN** (*Stochastic Gumbel Variational RNN*) pour la **détection d’anomalies sur séries temporelles**, appliquée au dataset **NetMob23**.
 
-L’objectif principal demandé était : **faire tourner le framework sur NetMob23 et produire des résultats (scores d’anomalie)**.
 
 ---
 
