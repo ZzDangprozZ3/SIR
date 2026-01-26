@@ -17,6 +17,8 @@ Cette version a été **adaptée pour le dataset NetMob**, permettant d'analyser
 ---
 
 ## 3️⃣ Structure du projet
+
+```text
 TraceAnomaly/
 ├── traceanomaly/             # package principale
 │   ├── __init__.py
@@ -30,6 +32,7 @@ TraceAnomaly/
 ├── requirements.txt
 └── traitementdata.py
 
+```
 ## 4️⃣ Workflow
 
 1. **Prétraitement des données**
