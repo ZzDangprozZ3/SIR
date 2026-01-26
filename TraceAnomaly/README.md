@@ -44,8 +44,9 @@ TraceAnomaly/
    - Utilisation de **Docker** pour lancer l'environnement complet :
    ```bash
    docker compose run --rm --build traceanomaly
-   Le framework entraîne le modèle sur les données prétraitées.
-    Pour chaque timestamp, il calcule le score de log-vraisemblance.
+   ```
+  Le framework entraîne le modèle sur les données prétraitées.
+  Pour chaque timestamp, il calcule le score de log-vraisemblance.
 3. **Détection d'anomalies**
     - Le module `detection_anomaly.py` analyse les scores de log-vraisemblance.
     - Un timestamp est considéré comme anormal si son score est inférieur à la moyenne moins 2 fois l’écart-type.
