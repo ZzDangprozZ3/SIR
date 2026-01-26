@@ -48,13 +48,14 @@ Pour utiliser un nouveau dataset, quelques points doivent être pris en compte :
      Exemple : pour NetMob23, avec `granularity = 15 minutes`, `window_size` peut être défini pour capturer 10 valeurs avant et après, soit 150 minutes autour de chaque fault.
 
 3. **Paramètres `start_ts` et `end_ts` dans `graph_dataset`**  
-   - Initialement, ces valeurs étaient calculées avec un décalage de ±20*granularity autour des timestamps des faults.  
-   - Si les métriques ne couvrent pas ces timestamps, cela peut provoquer des erreurs.  
+   - Initialement, `start_ts` et `end_ts` étaient calculés avec un décalage supplémentaire de ±20*granularity autour de chaque timestamp de fault.  
+   - Avec un `window_size` de (10,10), cela revient à prendre une plage plus large que le strict nécessaire (par exemple `timestamp - 30*granularity` comme début).  
+   - Si les métriques ne couvrent pas cette plage étendue, cela peut provoquer des erreurs.  
    - Dans NetMob23, ces valeurs ont été ajustées pour correspondre exactement aux timestamps des faults :  
      ```python
      start_ts = min(failures.timestamp)
      end_ts = max(failures.timestamp)
      ```  
-   - Il est conseillé de conserver cette logique ou d’ajuster en comprenant bien le mécanisme du framework.
+   - Il est conseillé de conserver cette logique ou d’adapter en comprenant bien le mécanisme de la fenêtre.
 
 Ces ajustements permettent au framework de traiter correctement les données et de capturer le contexte temporel pertinent autour de chaque anomalie.
