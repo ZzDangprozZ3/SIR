@@ -83,7 +83,7 @@ TraceAnomaly est configurable via le fichier
   - `TraceAnomaly/faults_TraceAnomaly.csv` : anomalies détectées
 Le format du fichier est le suivant : id,score | Netflix_45541_20190508,-4.5588937
 
-### B. Frameworks de détection d'anomalies / RCA
+### B. Frameworks d'analyse de la cause racine / RCA
 
 #### CausalRCA
 
