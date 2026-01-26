@@ -53,8 +53,9 @@ TraceAnomaly/
     - Les anomalies détectées sont enregistrées dans `faults_TraceAnomaly.csv` pour analyse ultérieure.
 
 ## 5️⃣ Utilisation
+```python
 python main.py
-
+```
 ##### Configuration de TraceAnomaly 
 
 TraceAnomaly est configurable via le fichier  
