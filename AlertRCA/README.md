@@ -26,6 +26,10 @@ Cette version a été spécialisée pour le dataset **NetMob23**.
   - `gt` : cause racine réelle  
   - `fullResponse` : classement des nœuds candidats avec leur score et label
 
+#### Utilisation
+```python
+docker compose run --rm --build app
+```
 #### Configuration
 Le comportement d’AlertRCA peut être configuré via le fichier :  
 `AlertRCA/graph/deep_rule.py`

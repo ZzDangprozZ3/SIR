@@ -124,6 +124,6 @@ Générés par le script de prétraitement :
   Résultat final de l’analyse RCA (classement des causes racines - regionID et application)
   Le fichier `report_A_NetMob.json` contient, pour chaque timestamp UNIX, la cause racine réelle (`gt`) et le classement des nœuds candidats avec leur score et label (`fullResponse`).
 
-#### Configuration (CausalRCA/config.ini)
+#### Configuration de AlertRCA
 AlertRCA est configurable via le fichier  
 `AlertRCA/graph/deep_rule.py`
