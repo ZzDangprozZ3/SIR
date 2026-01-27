@@ -88,7 +88,7 @@ TraceAnomaly est configurable via le fichier
 - `TraceAnomaly/faults_TraceAnomaly.csv` : anomalies détectées
 Le format du fichier est le suivant : id,score | Netflix_45541_20190508,-4.5588937
 
-### B. Frameworks de détection d'anomalies / RCA
+### B. Frameworks d'analyse de la cause racine / RCA
 
 #### CausalRCA
 
@@ -105,3 +105,30 @@ CausalRCA peut se configurer avec son fichier **config.ini** dans le dossier res
 **anomalies_file** : Nom du fichier source.
 **top_n** : Nombre de voisins géographiques.
 **force_clean** : Nettoyage avant lancement.
+
+#### AlertRCA
+
+AlertRCA est un algorithme de RCA qui analyse automatiquement des alertes multimodales et construit un graphe de dépendances sans règles expertes ni traces coûteuses.
+
+**Entrée** : 
+- `faults_TraceAnomaly.csv` : anomalies détectées par TraceAnomaly  
+- Fichiers de trafic `.txt` par service (Facebook, Netflix), granularité 15 minutes
+
+**Fichiers intermédiaires** :
+Générés par le script de prétraitement :
+- `faults_alertRCA.csv`
+- `faults.csv`
+- `graph.yml`
+- `train.csv`, `valid.csv`, `test.csv`
+- `metrics_filtered.csv`
+- `metrics.norm.csv`
+- `anomaly_direction_constraint.json`
+
+**Sortie** : 
+- `AlertRCA/A_NetMob/report_alertRCA/report_A_NetMob.json`  
+  Résultat final de l’analyse RCA (classement des causes racines - regionID et application)
+  Le fichier `report_A_NetMob.json` contient, pour chaque timestamp UNIX, la cause racine réelle (`gt`) et le classement des nœuds candidats avec leur score et label (`fullResponse`).
+
+#### Configuration de AlertRCA
+AlertRCA est configurable via le fichier  
+`AlertRCA/graph/deep_rule.py`
