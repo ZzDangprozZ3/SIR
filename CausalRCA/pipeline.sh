@@ -32,7 +32,7 @@ if [ "$count_pkl" -gt 0 ]; then
     echo ">>> $count_pkl datasets détectés."
     echo ">>> On saute l'étape de génération."
 else
-    echo ">>> Aucun dataset trouvé. Lancement de la conversion..."
+    echo ">>> Aucun dataset trouvé. Lancement de la conversion (génération des datasets)"
     if [ -f "$ANOMALY_FILE" ]; then
         python convert_netmob_causalrca.py --anomalies_file "$ANOMALY_FILE"
     else
@@ -68,18 +68,30 @@ done
 # Agrégation finale
 echo ">>> Agrégation des résultats..."
 python -c "
-import glob, json, pandas as pd, os
+import glob, json, pandas as pd, os, re
+
 results = []
 for f in glob.glob('./data_collected/*_result.json'):
     try:
         with open(f, 'r') as json_file:
             data = json.load(json_file)
-            if data.get('pagerank_scores'):
-                top_cause = data['pagerank_scores'][0] 
-                cause_idx = top_cause[0]
+            
+            # 1. Récupération de l'index et du score
+            if data.get('root_cause_ranking') and len(data['root_cause_ranking']) > 0:
+                top_cause = data['root_cause_ranking'][0] 
+                cause_idx = int(top_cause[0]) # C'est l'index (ex: 3)
                 score = top_cause[1]
+                
+                # 2. TRADUCTION : Index -> Nom de Tuile Réel
+                # On regarde dans la liste 'nodes' qui contient les noms [tile_A, tile_B, ...]
+                if 'nodes' in data and len(data['nodes']) > cause_idx:
+                    node_name = data['nodes'][cause_idx]
+                    # Nettoyage pour garder juste l'ID (ex: 'tile_100006' -> '100006')
+                    real_tile_id = str(node_name).replace('tile_', '')
+                else:
+                    real_tile_id = f'Index_{cause_idx}' # Fallback si liste nodes absente
             else:
-                cause_idx, score = 'Inconnu', 0
+                real_tile_id, score = 'Inconnu', 0
             
             filename = os.path.basename(f)
             parts = filename.replace('_result.json', '').split('_')
@@ -88,10 +100,11 @@ for f in glob.glob('./data_collected/*_result.json'):
                 'Fichier_Source': filename,
                 'Date_Anomalie': parts[1] if len(parts)>1 else '?',
                 'Tuile_Cible': parts[2] if len(parts)>2 else '?',
-                'Cause_Racine_Detectee': cause_idx,
+                'ID_Tuile_Cause': real_tile_id,   # <--- C'est ici le vrai ID GeoJSON
                 'Score_PageRank': score
             })
-    except: pass
+    except Exception as e: 
+        print(f'Erreur sur {f}: {e}')
 
 if results:
     df = pd.DataFrame(results)
@@ -104,6 +117,5 @@ if results:
 else:
     print('   [INFO] Aucun résultat à agréger.')
 "
-
 
 echo "   PIPELINE TERMINÉ ($count cas traités)"
