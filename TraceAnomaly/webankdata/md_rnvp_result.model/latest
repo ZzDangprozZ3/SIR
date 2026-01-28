@@ -1,0 +1,2 @@
+model_checkpoint_path: "/app/webankdata/md_rnvp_result.model/variables.dat"
+all_model_checkpoint_paths: "/app/webankdata/md_rnvp_result.model/variables.dat"
