@@ -93,6 +93,51 @@ TraceAnomaly est configurable via le fichier
 - `TraceAnomaly/faults_TraceAnomaly.csv` : anomalies détectées
 Le format du fichier est le suivant : id,score | Netflix_45541_20190508,-4.5588937
 
+
+#### AOC_IDS
+
+Framework de détection d'anomalies basé sur l'apprentissage profond continu. Adapté au dataset NetMob23 pour la détection d'anomalies dans le trafic mobile.
+
+Génère un fichier `anomalies_detected_all.csv` dans les dossiers `AOC_IDS/output/Facebook` et `AOC_IDS/output/Netflix` avec les prédictions.
+
+Le format est : `tile_id,date,label_reel,label_predit`
+
+Génère en parallèle un fichier `validation_report.txt` dans chaque dossier de service avec le rapport de validation croisée.
+
+Le format du rapport inclut la distribution des anomalies détectées et le taux d'accord entre les méthodes.
+
+##### Configuration d'AOC_IDS (AOC_IDS/run_complete_pipeline.sh)
+
+AOC_IDS peut se configurer avec son fichier `run_complete_pipeline.sh` dans le dossier respectif.
+
+* `--contamination` : Proportion d'anomalies pour la génération de pseudo-labels (défaut: 0.05)
+* `--epochs` : Nombre d'itérations d'entraînement (défaut: 50)
+* `--dataset` : Type de dataset (netmob pour NetMob23)
+
+##### Workflow
+
+1. **Extraction de features**
+   * Exécution du script `convert.py`
+   * Transformation des séries temporelles (96 points) en 15 features statistiques
+
+2. **Génération de pseudo-labels**
+   * Application d'un vote majoritaire entre 3 algorithmes : Isolation Forest, Z-Score, IQR
+   * Labellisation binaire (0=normal, 1=anomalie)
+
+3. **Entraînement et prédiction**
+   * Lancement de l'environnement via Docker
+   * Entraînement du modèle auto-encodeur avec CRC Loss
+   * Génération des prédictions sur données de test
+
+4. **Validation croisée**
+   * Analyse comparative par le module `validation.py`
+
+##### Sortie
+
+* `AOC_IDS/output/{Service}/anomalies_detected_all.csv` : prédictions complètes par tile et date
+* `AOC_IDS/output/{Service}/validation_report.txt` : rapport de cohérence des méthodes
+
+
 ### B. Frameworks d'analyse de la cause racine / RCA
 
 #### CausalRCA
