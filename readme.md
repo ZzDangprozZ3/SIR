@@ -243,6 +243,8 @@ Générés par le script de prétraitement :
 AlertRCA est configurable via le fichier  
 `AlertRCA/graph/deep_rule.py`
 
+Lisez le readme.md dans dossier AlertRCA pour plus d'informations.
+
 #### SGmVRNN
 
 Framework de **détection d’anomalies non supervisé basé sur deep learning**, reposant sur un modèle variationnel récurrent (Stochastic Gated mVRNN), adapté au dataset **NetMob23**.
