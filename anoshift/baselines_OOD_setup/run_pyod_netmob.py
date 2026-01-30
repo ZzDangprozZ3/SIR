@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import load_netmob
 import gc
+import os
 from pyod.models.copod import COPOD
 
 # Paramètres de sécurité RAM
@@ -13,7 +14,7 @@ def run_experiment(method_name, app_name, ds_size):
     print(f"NETMOB23 - {method_name.upper()} SUR {app_name.upper()} ({ds_size})")
     print("="*60)
 
-    netmob_path = "../datasets/NetMob23_Parquet"
+    netmob_path = os.getenv('DATASET_PATH', '/app/datasets/NetMob23_Parquet')
 
     # [1/3] CHARGEMENT TRAIN
     print("\n[1/3] CHARGEMENT TRAIN...")

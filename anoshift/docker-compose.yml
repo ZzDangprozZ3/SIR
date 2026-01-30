@@ -1,0 +1,9 @@
+version: '3.8'
+services:
+  anoshift:
+    build: .
+    volumes:
+      # On lie le dossier datasets du Mac au dossier /app/datasets de Docker
+      - ../datasets:/app/datasets
+    environment:
+      - DATASET_PATH=/app/datasets/NetMob23_Parquet

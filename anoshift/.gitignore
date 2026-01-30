@@ -1,0 +1,6 @@
+datasets/
+NetMob23/
+results_*.txt
+*.parquet
+__pycache__/
+.DS_Store
