@@ -1,0 +1,21 @@
+venv/
+__pycache__/
+*.pyc
+
+data_preprocess/Dataset NetMob23/
+data_preprocess/SMD_concated/
+data_preprocess/data_processed/
+**/*.seq
+
+model/
+log_trainer/
+log_tester/
+
+*.rar
+*.zip
+*.7z
+*.tar
+*.tar.gz
+*.pth
+*.pt
+*.so
