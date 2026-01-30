@@ -182,3 +182,175 @@ Générés par le script de prétraitement :
 #### Configuration de AlertRCA
 AlertRCA est configurable via le fichier  
 `AlertRCA/graph/deep_rule.py`
+
+#### SGmVRNN
+
+Framework de **détection d’anomalies non supervisé basé sur deep learning**, reposant sur un modèle variationnel récurrent (Stochastic Gated mVRNN), adapté au dataset **NetMob23**.
+
+Il s’appuie sur :
+
+- Un modèle séquentiel de type RNN/LSTM
+- Un latent continu *z*
+- Un latent catégoriel *c* estimé via Gumbel-Softmax
+- Une génération probabiliste permettant le calcul d’un score par **log-vraisemblance**
+
+Initialement conçu pour le dataset **SMD**, le framework a été adapté afin de fonctionner avec les données NetMob23.
+
+##### Objectif de l’adaptation
+
+- Conversion des données NetMob23 vers le format `.seq`
+- Adaptation du modèle pour supporter `n = 96`
+- Entraînement et génération de checkpoints
+- Génération de scores exploitables pour la détection d’anomalies
+
+---
+
+##### Dataset NetMob23
+
+Les données NetMob23 sont organisées par :
+
+- Application (Facebook / Netflix / Spotify)
+- Tuile géographique (Tile ID)
+- Séries temporelles de trafic
+
+Format des fichiers :
+
+Chaque ligne commence par une date suivie de 96 valeurs (pas de 15 minutes → 24h) :
+20190430 v1 v2 v3 ... v96
+
+
+---
+
+##### Difficultés rencontrées
+
+###### (1) Incompatibilité du nombre de KPIs
+
+Le modèle original ne supportait que :
+
+- `n = 36` ou `n = 38`
+
+Or NetMob nécessite :
+
+- `n = 96`
+
+**Solution** :
+
+- Modification du fichier `model.py`
+- Adaptation des modules `EncX` et `DecX`
+
+---
+
+###### (2) Incompatibilité des noms des fichiers `.seq`
+
+Le loader `KpiReader` attend :
+
+1.seq, 2.seq, 3.seq, ...
+
+
+Après conversion NetMob :
+
+100023.seq, 453162.seq, ...
+
+
+**Solution** :
+
+- Création d’un dataset renuméroté via liens symboliques
+
+Exemple :
+
+netmob_nf_dl_small_renum/train/1.seq → original/67.seq
+
+
+---
+
+###### (3) Instabilité numérique (NaN)
+
+Les valeurs élevées du trafic (> 60000) provoquaient :
+
+- Explosion de gradients
+- NaN dès le premier epoch
+- Sorties non finies
+
+**Solution** :
+
+Ajout d’une normalisation dans `trainer.py` :
+
+- `log1p`
+- Standardisation (mean/std)
+- Clamp des valeurs
+
+---
+
+###### (4) Présence de valeurs NaN dans certaines applications
+
+Certains fichiers (notamment Spotify) contenaient des NaN.
+
+**Choix** :
+
+- Priorisation des services Netflix et Facebook
+
+---
+
+##### Installation
+
+###### 1. Création de l’environnement virtuel
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+###### 2. Installation des dépendances
+```bash
+pip install -r requirements.txt
+```
+
+##### Prétraitement : NetMob23 → .seq
+
+SGmVRNN attend des fichiers `.seq` PyTorch contenant :
+
+- **value** : tenseur `[20, 1, 96, 1]`
+- **label** : tenseur `[20, 1, 1]`
+- **ts** : tenseur `[20, 1, 1]`
+
+Conversion via le script :
+
+```bash
+python scripts/netmob_to_seq.py \
+  --input_path "data_preprocess/Dataset NetMob23/Netflix/DL" \
+  --output_path "data_preprocess/data_processed/netmob_nf_dl/train" \
+  --app netflix
+```
+##### Entraînement
+
+Exemple d’entraînement sur NetMob (dataset renuméroté) :
+
+```bash
+python trainer.py \
+  --dataset_path ../data_preprocess/data_processed/netmob_nf_dl_small_renum/train \
+  --gpu_id 0 \
+  --log_path log_trainer/netmob_nf_dl_small \
+  --checkpoints_path model/netmob_nf_dl_small \
+  --epochs 3 \
+  --batch_size 128 \
+  --n 96
+```
+Les checkpoints sont sauvegardés automatiquement dans le dossier model/
+
+##### Résultats
+
+Les résultats générés sont stockés dans :
+```bash
+results/netmob_nf_dl_small/netmob_nf_dl_small_scores.txt
+```
+Format :
+```bash
+timestamp, score_loglikelihood, Normaly/Anomaly
+```
+
+👉 Le score correspond à la log-vraisemblance du dernier timestamp.  
+Plus la valeur est faible (négative), plus l’anomalie est probable.
+
+
+
+
+
