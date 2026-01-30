@@ -138,6 +138,66 @@ AOC_IDS peut se configurer avec son fichier `run_complete_pipeline.sh` dans le d
 * `AOC_IDS/output/{Service}/validation_report.txt` : rapport de cohérence des méthodes
 
 
+
+
+#### AnoShift
+
+Framework de détection d'anomalies non-supervisée basé sur les méthodes statistiques PyOD. Adapté au dataset NetMob23 pour la détection d'anomalies dans le trafic mobile.
+
+Génère un fichier `results_{app}_{size}.txt` dans le dossier `anoshift/baselines_OOD_setup/` avec les scores d'anomalie et le top des journées les plus anormales.
+
+Le format inclut : statistiques globales (min, max, moyenne, écart-type) et le classement des anomalies détectées avec leur date et score.
+
+##### Configuration d'AnoShift
+
+AnoShift se configure via les arguments de ligne de commande du script `run_pyod_netmob.py` :
+
+* `method` : Algorithme de détection (copod, ecod, isoforest, lof, ocsvm)
+* `app` : Application cible (facebook, netflix)
+* `size` : Taille du dataset (subset, full)
+
+Paramètres internes (dans le script) :
+
+* `MAX_TRAIN_SAMPLES` : Nombre maximum d'échantillons pour l'entraînement (défaut: 100000)
+* `BATCH_SIZE` : Taille des batches pour l'inférence (défaut: 10000)
+
+##### Workflow
+
+1. **Conversion des données**
+
+Exécution du script convert_netmob_to_parquet.py
+Transformation des 24,409 fichiers TXT en fichiers Parquet optimisés
+Génération des subsets (50k lignes) pour tests rapides
+
+
+2. **Chargement et prétraitement**
+
+Chargement des données Parquet via le module load_netmob.py
+Split train/test (70/30)
+Sous-échantillonnage du train si nécessaire (100k max)
+
+
+3. **Entraînement et prédiction**
+
+Entraînement du modèle COPOD sur les données de train
+Prédiction des scores d'anomalie par batches sur les données de test
+Libération mémoire entre les étapes
+
+
+4. **Analyse des résultats**
+
+Calcul des statistiques globales des scores
+Identification des top anomalies (journées avec scores les plus élevés)
+Sauvegarde du rapport de résultats
+
+
+
+##### Sortie
+
+AnoShift/baselines_OOD_setup/results_{app}_{size}.txt : rapport complet avec statistiques et top anomalies
+
+
+
 ### B. Frameworks d'analyse de la cause racine / RCA
 
 #### CausalRCA
